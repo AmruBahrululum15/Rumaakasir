@@ -1,0 +1,52 @@
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+body {
+    background: #f5f7fb;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.content-wrapper {
+    background: #f5f7fb !important;
+}
+
+.card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.small-box {
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.main-sidebar {
+    background: white !important;
+}
+
+.brand-link {
+    background: white !important;
+    border-bottom: none !important;
+}
+
+.nav-sidebar > .nav-item > .nav-link {
+    color: #4b5563;
+    border-radius: 12px;
+    margin: 6px;
+}
+
+.nav-sidebar > .nav-item > .nav-link.active {
+    background: #2563eb !important;
+    color: white !important;
+}
+
+.main-header {
+    background: white !important;
+    border-bottom: none !important;
+}
+
+.content-header h1 {
+    font-weight: 700;
+}

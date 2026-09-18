@@ -1,0 +1,1499 @@
+/* =========================================================
+   POS ENTERPRISE - GLOBAL UI
+   Target: Modern Orange / Cream Enterprise POS
+   Compatible: AdminLTE 3
+   ========================================================= */
+
+:root {
+    --pos-orange: #ff7a18;
+    --pos-orange-dark: #f36b0a;
+    --pos-orange-light: #fff1e7;
+
+    --pos-green: #20b66f;
+    --pos-green-light: #eafaf2;
+
+    --pos-purple: #7c4dff;
+    --pos-purple-light: #f1ecff;
+
+    --pos-blue: #3b82f6;
+    --pos-blue-light: #edf4ff;
+
+    --pos-bg: #f6f3ef;
+    --pos-sidebar: #fffaf4;
+    --pos-card: #ffffff;
+
+    --pos-border: #eee8e1;
+
+    --pos-text: #172033;
+    --pos-text-dark: #111827;
+    --pos-muted: #8a8f9c;
+
+    --pos-shadow: 0 8px 25px rgba(40, 30, 20, 0.055);
+    --pos-shadow-hover: 0 12px 30px rgba(40, 30, 20, 0.09);
+
+    --pos-radius: 16px;
+}
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    background: var(--pos-bg) !important;
+    color: var(--pos-text) !important;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif !important;
+    font-size: 14px;
+}
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.wrapper {
+    background: var(--pos-bg) !important;
+}
+
+.content-wrapper {
+    background: var(--pos-bg) !important;
+    min-height: calc(100vh - 57px) !important;
+}
+
+.content {
+    background: transparent !important;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.main-sidebar {
+    background: var(--pos-sidebar) !important;
+    border-right: 1px solid var(--pos-border) !important;
+    box-shadow: none !important;
+    width: 232px !important;
+    min-height: 100vh !important;
+}
+
+.sidebar {
+    background: var(--pos-sidebar) !important;
+    padding-top: 10px !important;
+    padding-bottom: 95px !important;
+}
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.brand-link {
+    height: 62px !important;
+    width: 232px !important;
+
+    background: linear-gradient(135deg, #ff7a18 0%, #ff8a32 100%) !important;
+
+    color: #ffffff !important;
+
+    border-bottom: none !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    padding: 8px 14px !important;
+
+    box-shadow: 0 4px 15px rgba(255, 122, 24, 0.12);
+}
+
+/* icon brand */
+
+.brand-link::before {
+    content: "\f54e";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+
+    width: 43px;
+    height: 43px;
+
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.22);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+
+    margin-right: 10px;
+}
+
+/* brand text */
+
+.brand-text {
+    display: flex !important;
+    flex-direction: column !important;
+
+    font-size: 0 !important;
+
+    line-height: 1.1 !important;
+
+    color: #fff !important;
+}
+
+.brand-text::before {
+    content: "POS Enterprise";
+
+    font-size: 15px;
+    font-weight: 700;
+
+    color: #fff;
+}
+
+.brand-text::after {
+    content: "Point of Sale";
+
+    margin-top: 3px;
+
+    font-size: 11px;
+    font-weight: 400;
+
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+   ========================================================= */
+
+.nav-sidebar {
+    padding: 0 8px !important;
+}
+
+.nav-sidebar > .nav-item {
+    margin-bottom: 3px !important;
+}
+
+/* menu section/header */
+
+.nav-sidebar .nav-header {
+    color: #b09b87 !important;
+
+    font-size: 10px !important;
+    font-weight: 700 !important;
+
+    letter-spacing: 0.7px !important;
+    text-transform: uppercase !important;
+
+    padding: 14px 14px 7px !important;
+
+    margin-top: 2px !important;
+
+    border-top: 1px solid #f0e9e1 !important;
+}
+
+.nav-sidebar .nav-header:first-child {
+    border-top: none !important;
+}
+
+/* =========================================================
+   SIDEBAR LINKS
+   ========================================================= */
+
+.nav-sidebar .nav-link {
+    color: #354052 !important;
+
+    border-radius: 9px !important;
+
+    margin: 2px 5px !important;
+
+    padding: 9px 11px !important;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease !important;
+
+    font-size: 12.5px !important;
+
+    font-weight: 500 !important;
+}
+
+/* icons */
+
+.nav-sidebar .nav-link > .nav-icon {
+    color: #303946 !important;
+
+    font-size: 14px !important;
+
+    width: 20px !important;
+
+    margin-right: 7px !important;
+
+    transition: color 0.2s ease;
+}
+
+/* hover */
+
+.nav-sidebar .nav-link:hover {
+    background: var(--pos-orange-light) !important;
+
+    color: var(--pos-orange-dark) !important;
+
+    transform: translateX(2px);
+}
+
+.nav-sidebar .nav-link:hover > .nav-icon {
+    color: var(--pos-orange) !important;
+}
+
+/* =========================================================
+   ACTIVE MENU
+   ========================================================= */
+
+.nav-sidebar .nav-link.active,
+.nav-sidebar .nav-link.active:hover {
+    background: linear-gradient(135deg, #ff8b32 0%, #ff7414 100%) !important;
+
+    color: #ffffff !important;
+
+    box-shadow: 0 5px 12px rgba(255, 122, 24, 0.18) !important;
+
+    transform: none !important;
+}
+
+.nav-sidebar .nav-link.active > .nav-icon {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   SIDEBAR TREEVIEW
+   ========================================================= */
+
+.nav-treeview {
+    padding-left: 8px !important;
+}
+
+.nav-treeview .nav-link {
+    font-size: 12px !important;
+}
+
+/* =========================================================
+   SIDEBAR FOOTER DECORATION
+   ========================================================= */
+
+.main-sidebar::after {
+    content: "";
+
+    position: fixed;
+
+    left: 0;
+    bottom: 0;
+
+    width: 232px;
+    height: 72px;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at 20px 70px,
+            rgba(255, 122, 24, 0.16) 0 32px,
+            transparent 33px
+        ),
+        radial-gradient(
+            circle at 100px 80px,
+            rgba(255, 122, 24, 0.1) 0 48px,
+            transparent 49px
+        ),
+        linear-gradient(to top, rgba(255, 122, 24, 0.06), transparent);
+
+    z-index: 5;
+}
+
+/* =========================================================
+   TOP NAVBAR
+   ========================================================= */
+
+.main-header {
+    border-bottom: 1px solid var(--pos-border) !important;
+
+    box-shadow: 0 2px 10px rgba(30, 20, 10, 0.025) !important;
+
+    background: #ffffff !important;
+
+    margin-left: 232px !important;
+}
+
+.main-header .navbar {
+    background: #ffffff !important;
+
+    min-height: 62px !important;
+}
+
+/* hamburger */
+
+.main-header .nav-link {
+    color: #343b48 !important;
+}
+
+.main-header .nav-link:hover {
+    color: var(--pos-orange) !important;
+}
+
+/* hamburger icon */
+
+.main-header .navbar-nav:first-child .nav-link i {
+    color: var(--pos-orange-dark) !important;
+}
+
+/* =========================================================
+   NAVBAR USER
+   ========================================================= */
+
+.navbar-nav .user-menu > .nav-link {
+    color: #343b48 !important;
+}
+
+.navbar-nav .user-menu > .nav-link:hover {
+    color: var(--pos-orange) !important;
+}
+
+/* user avatar */
+
+.navbar-nav .user-menu > .nav-link img {
+    width: 31px !important;
+    height: 31px !important;
+
+    border-radius: 50% !important;
+
+    object-fit: cover !important;
+
+    border: 2px solid #fff3e8 !important;
+}
+
+/* =========================================================
+   CONTENT HEADER
+   ========================================================= */
+
+.content-header {
+    padding: 22px 26px 8px !important;
+
+    background: transparent !important;
+}
+
+.content-header h1 {
+    color: var(--pos-text-dark) !important;
+
+    font-size: 28px !important;
+
+    font-weight: 700 !important;
+
+    margin-bottom: 3px !important;
+}
+
+.content-header p {
+    color: var(--pos-muted) !important;
+
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   BREADCRUMB
+   ========================================================= */
+
+.breadcrumb {
+    background: transparent !important;
+
+    padding: 0 !important;
+
+    margin: 0 !important;
+
+    font-size: 12px !important;
+}
+
+.breadcrumb-item a {
+    color: var(--pos-orange) !important;
+}
+
+/* =========================================================
+   CARD GLOBAL
+   ========================================================= */
+
+.card {
+    background: var(--pos-card) !important;
+
+    border: 1px solid var(--pos-border) !important;
+
+    border-radius: var(--pos-radius) !important;
+
+    box-shadow: var(--pos-shadow) !important;
+
+    overflow: hidden;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease !important;
+}
+
+.card:hover {
+    box-shadow: var(--pos-shadow-hover) !important;
+}
+
+.card-header {
+    background: #ffffff !important;
+
+    border-bottom: 1px solid #f0ebe6 !important;
+
+    padding: 15px 18px !important;
+}
+
+.card-title {
+    color: var(--pos-text) !important;
+
+    font-weight: 700 !important;
+
+    font-size: 15px !important;
+}
+
+.card-body {
+    background: #ffffff !important;
+}
+
+/* =========================================================
+   BUTTON ORANGE
+   ========================================================= */
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff8a32 0%, #ff7414 100%) !important;
+
+    border: none !important;
+
+    color: #fff !important;
+
+    border-radius: 9px !important;
+
+    font-weight: 600 !important;
+
+    box-shadow: 0 5px 12px rgba(255, 122, 24, 0.17) !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ff7414 0%, #f36609 100%) !important;
+
+    color: #fff !important;
+
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: var(--pos-orange) !important;
+    border-color: var(--pos-orange) !important;
+    color: #fff !important;
+}
+
+/* =========================================================
+   OUTLINE BUTTON
+   ========================================================= */
+
+.btn-outline-primary {
+    color: var(--pos-orange-dark) !important;
+
+    border-color: var(--pos-orange) !important;
+
+    border-radius: 9px !important;
+}
+
+.btn-outline-primary:hover {
+    background: var(--pos-orange) !important;
+
+    color: #fff !important;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-control,
+.custom-select,
+select,
+input,
+textarea {
+    border: 1px solid #e4ded7 !important;
+
+    border-radius: 9px !important;
+
+    color: var(--pos-text) !important;
+
+    background: #ffffff !important;
+
+    font-size: 13px !important;
+
+    min-height: 38px;
+}
+
+.form-control:focus,
+.custom-select:focus,
+select:focus,
+input:focus,
+textarea:focus {
+    border-color: var(--pos-orange) !important;
+
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1) !important;
+}
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+label {
+    color: #4a5361 !important;
+
+    font-size: 12px !important;
+
+    font-weight: 600 !important;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table {
+    color: var(--pos-text) !important;
+
+    font-size: 13px !important;
+}
+
+.table thead th {
+    background: #fffaf5 !important;
+
+    color: #8c7968 !important;
+
+    border-top: none !important;
+
+    border-bottom: 1px solid #eee5dc !important;
+
+    font-size: 11px !important;
+
+    text-transform: uppercase !important;
+
+    letter-spacing: 0.35px !important;
+
+    font-weight: 700 !important;
+
+    padding: 12px 10px !important;
+}
+
+.table tbody td {
+    border-top: 1px solid #f3eee9 !important;
+
+    vertical-align: middle !important;
+
+    padding: 11px 10px !important;
+}
+
+.table tbody tr:hover {
+    background: #fffaf5 !important;
+}
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.badge {
+    border-radius: 7px !important;
+
+    padding: 5px 8px !important;
+
+    font-size: 10px !important;
+
+    font-weight: 700 !important;
+}
+
+.badge-success {
+    background: var(--pos-green-light) !important;
+
+    color: #13945a !important;
+}
+
+.badge-danger {
+    background: #fff0f0 !important;
+
+    color: #e54848 !important;
+}
+
+.badge-warning {
+    background: #fff4e5 !important;
+
+    color: #d97706 !important;
+}
+
+.badge-primary {
+    background: var(--pos-orange-light) !important;
+
+    color: var(--pos-orange-dark) !important;
+}
+
+/* =========================================================
+   DATATABLE
+   ========================================================= */
+
+.dataTables_wrapper {
+    font-size: 12px !important;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #e4ded7 !important;
+
+    border-radius: 8px !important;
+
+    padding: 6px 10px !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--pos-orange) !important;
+
+    color: #fff !important;
+
+    border: 1px solid var(--pos-orange) !important;
+
+    border-radius: 7px !important;
+}
+
+/* =========================================================
+   ALERT
+   ========================================================= */
+
+.alert {
+    border-radius: 10px !important;
+
+    border: none !important;
+
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-content {
+    border: none !important;
+
+    border-radius: 16px !important;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee7df !important;
+
+    background: #fffaf5 !important;
+}
+
+.modal-title {
+    font-weight: 700 !important;
+}
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.page-link {
+    color: var(--pos-orange-dark) !important;
+
+    border-color: #eee5dc !important;
+}
+
+.page-item.active .page-link {
+    background: var(--pos-orange) !important;
+
+    border-color: var(--pos-orange) !important;
+
+    color: #fff !important;
+}
+
+/* =========================================================
+   DROPDOWN
+   ========================================================= */
+
+.dropdown-menu {
+    border: 1px solid var(--pos-border) !important;
+
+    border-radius: 12px !important;
+
+    box-shadow: 0 12px 35px rgba(30, 20, 10, 0.1) !important;
+}
+
+.dropdown-item {
+    font-size: 13px !important;
+
+    border-radius: 7px !important;
+
+    margin: 2px 5px !important;
+
+    width: calc(100% - 10px) !important;
+}
+
+.dropdown-item:hover {
+    background: var(--pos-orange-light) !important;
+
+    color: var(--pos-orange-dark) !important;
+}
+
+/* =========================================================
+   SMALL BOX / INFO BOX
+   ========================================================= */
+
+.small-box,
+.info-box {
+    border-radius: var(--pos-radius) !important;
+
+    background: #ffffff !important;
+
+    color: var(--pos-text) !important;
+
+    box-shadow: var(--pos-shadow) !important;
+
+    border: 1px solid var(--pos-border) !important;
+
+    overflow: hidden;
+}
+
+.small-box .icon,
+.info-box .info-box-icon {
+    color: var(--pos-orange) !important;
+}
+
+/* =========================================================
+   DASHBOARD CUSTOM COMPONENTS
+   ========================================================= */
+
+.dashboard-container {
+    padding: 8px 26px 30px !important;
+}
+
+.dashboard-header {
+    padding: 20px 26px 12px !important;
+}
+
+.dashboard-header .eyebrow {
+    color: var(--pos-orange-dark) !important;
+
+    font-size: 10px !important;
+
+    font-weight: 800 !important;
+
+    letter-spacing: 1px !important;
+
+    text-transform: uppercase !important;
+}
+
+.dashboard-header h1 {
+    color: var(--pos-text-dark) !important;
+
+    font-size: 28px !important;
+
+    font-weight: 750 !important;
+
+    margin: 5px 0 2px !important;
+}
+
+.dashboard-header p {
+    color: var(--pos-muted) !important;
+
+    font-size: 13px !important;
+}
+
+/* =========================================================
+   QUICK ACTION CARD
+   ========================================================= */
+
+.quick-action-card {
+    background: #ffffff !important;
+
+    border: 1px solid var(--pos-border) !important;
+
+    border-radius: 14px !important;
+
+    min-height: 82px;
+
+    padding: 12px 14px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    box-shadow: var(--pos-shadow) !important;
+
+    transition: all 0.2s ease !important;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow: var(--pos-shadow-hover) !important;
+}
+
+.quick-action-icon {
+    width: 45px;
+
+    height: 45px;
+
+    border-radius: 13px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: var(--pos-orange-light);
+
+    color: var(--pos-orange);
+
+    font-size: 17px;
+}
+
+.quick-action-title {
+    color: var(--pos-text);
+
+    font-weight: 700;
+
+    font-size: 13px;
+}
+
+.quick-action-description {
+    color: var(--pos-muted);
+
+    font-size: 10px;
+}
+
+.quick-action-arrow {
+    margin-left: auto;
+
+    color: #c7a991;
+}
+
+/* =========================================================
+   STAT CARD
+   ========================================================= */
+
+.pos-stat-card {
+    background: #ffffff;
+
+    border: 1px solid var(--pos-border);
+
+    border-radius: 16px;
+
+    padding: 16px 18px;
+
+    box-shadow: var(--pos-shadow);
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+.pos-stat-icon {
+    width: 37px;
+
+    height: 37px;
+
+    border-radius: 11px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: var(--pos-orange-light);
+
+    color: var(--pos-orange);
+
+    font-size: 15px;
+}
+
+.pos-stat-label {
+    color: #ad9987;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.pos-stat-value {
+    color: var(--pos-text-dark);
+
+    font-size: 25px;
+
+    font-weight: 750;
+
+    margin-top: 5px;
+}
+
+.pos-stat-description {
+    color: var(--pos-muted);
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   ORANGE LINK
+   ========================================================= */
+
+.pos-orange {
+    color: var(--pos-orange) !important;
+}
+
+/* =========================================================
+   CHART CARD
+   ========================================================= */
+
+.pos-chart-card {
+    background: #ffffff;
+
+    border: 1px solid var(--pos-border);
+
+    border-radius: 16px;
+
+    padding: 18px;
+
+    box-shadow: var(--pos-shadow);
+}
+
+.pos-chart-title {
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: var(--pos-text);
+}
+
+.pos-chart-subtitle {
+    color: var(--pos-muted);
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   CONTENT BUTTON
+   ========================================================= */
+
+.pos-btn-primary {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    background: linear-gradient(135deg, #ff8a32, #ff7414);
+
+    color: #ffffff !important;
+
+    border: none;
+
+    border-radius: 10px;
+
+    padding: 10px 16px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    box-shadow: 0 6px 14px rgba(255, 122, 24, 0.17);
+
+    transition: all 0.2s ease;
+}
+
+.pos-btn-primary:hover {
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 8px 18px rgba(255, 122, 24, 0.22);
+}
+
+/* =========================================================
+   POS EMPTY STATE
+   ========================================================= */
+
+.pos-empty {
+    padding: 35px 20px;
+
+    text-align: center;
+
+    color: var(--pos-muted);
+}
+
+.pos-empty i {
+    font-size: 30px;
+
+    color: #d8c9bb;
+
+    margin-bottom: 10px;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 7px;
+
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f7f3ee;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d9cfc4;
+
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #c5b6a7;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+    .main-sidebar {
+        width: 232px !important;
+    }
+
+    .main-header {
+        margin-left: 0 !important;
+    }
+
+    .content-header {
+        padding-left: 18px !important;
+
+        padding-right: 18px !important;
+    }
+
+    .dashboard-container {
+        padding: 8px 18px 25px !important;
+    }
+
+    .dashboard-header {
+        padding: 18px 18px 10px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .content-header h1 {
+        font-size: 23px !important;
+    }
+
+    .dashboard-header h1 {
+        font-size: 23px !important;
+    }
+
+    .card {
+        border-radius: 13px !important;
+    }
+
+    .main-sidebar {
+        width: 232px !important;
+    }
+}
+/* =========================================================
+   APP LAYOUT ADDITIONS
+   ========================================================= */
+
+/* =========================================================
+   NAVBAR USER AVATAR
+   ========================================================= */
+
+.pos-navbar-avatar {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fff0e4;
+
+    color: #ff7a18;
+
+    margin-right: 7px;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   SIDEBAR USER
+   ========================================================= */
+
+.pos-sidebar-user {
+    padding: 7px 8px 9px !important;
+
+    border-bottom: 1px solid #f0e9e1 !important;
+}
+
+.pos-sidebar-user .image {
+    display: flex;
+
+    align-items: center;
+}
+
+.pos-sidebar-user .image img {
+    width: 32px;
+    height: 32px;
+
+    object-fit: cover;
+}
+
+.pos-sidebar-user .info {
+    padding-left: 8px !important;
+}
+
+.pos-sidebar-user .info a {
+    color: #263142 !important;
+
+    font-size: 11px !important;
+
+    font-weight: 700 !important;
+
+    max-width: 130px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.pos-sidebar-user .info small {
+    color: #a18f7f !important;
+
+    font-size: 9px !important;
+}
+
+.pos-sidebar-avatar {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 50%;
+
+    background: #fff0e4;
+
+    color: #ff7a18;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.pos-brand {
+    display: flex !important;
+
+    align-items: center !important;
+
+    padding: 8px 14px !important;
+}
+
+.pos-brand-icon {
+    width: 43px;
+    height: 43px;
+
+    border-radius: 13px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.2);
+
+    color: #fff;
+
+    font-size: 19px;
+
+    flex-shrink: 0;
+}
+
+.pos-brand-content {
+    margin-left: 10px;
+
+    min-width: 0;
+}
+
+.pos-brand-title {
+    color: #fff;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    line-height: 1.1;
+
+    white-space: nowrap;
+}
+
+.pos-brand-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+
+    font-size: 10px;
+
+    font-weight: 400;
+
+    margin-top: 3px;
+
+    line-height: 1.1;
+}
+
+/* =========================================================
+   DROPDOWN USER
+   ========================================================= */
+
+.pos-user-dropdown-header {
+    padding: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    background: #fffaf5;
+}
+
+.pos-user-dropdown-avatar {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    background: #fff0e4;
+
+    color: #ff7a18;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.pos-user-dropdown-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.pos-user-dropdown-name {
+    color: #172033;
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+.pos-user-dropdown-role {
+    color: #999;
+
+    font-size: 10px;
+
+    margin-top: 2px;
+}
+
+.pos-dropdown-logout {
+    color: #e85d4a !important;
+
+    background: transparent !important;
+
+    border: none !important;
+
+    width: 100%;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+.pos-dropdown-logout:hover {
+    background: #fff0ec !important;
+
+    color: #d94835 !important;
+}
+
+/* =========================================================
+   NAVBAR NOTIFICATION
+   ========================================================= */
+
+.main-header .navbar-badge {
+    background: #ff4d4d !important;
+
+    color: #fff !important;
+
+    font-size: 8px !important;
+
+    font-weight: 700 !important;
+
+    min-width: 14px;
+
+    min-height: 14px;
+
+    line-height: 14px;
+
+    padding: 0 4px !important;
+
+    top: 5px !important;
+
+    right: 3px !important;
+}
+
+/* =========================================================
+   SIDEBAR LOGOUT
+   ========================================================= */
+
+.pos-sidebar-logout-item {
+    margin-top: 7px !important;
+
+    padding-top: 7px !important;
+
+    border-top: 1px solid #f0e9e1 !important;
+}
+
+.pos-sidebar-logout-item form {
+    margin: 0;
+}
+
+.pos-logout-button {
+    width: calc(100% - 10px);
+
+    margin: 2px 5px;
+
+    border: none;
+
+    background: #fff0ec;
+
+    color: #e85d4a;
+
+    border-radius: 9px;
+
+    padding: 9px 11px;
+
+    text-align: left;
+
+    font-size: 12.5px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    transition: all 0.2s ease;
+}
+
+.pos-logout-button:hover {
+    background: #ffe3dc;
+
+    color: #d94835;
+
+    transform: translateX(2px);
+}
+
+.pos-logout-button .nav-icon {
+    width: 20px;
+
+    margin: 0;
+
+    text-align: center;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.pos-footer {
+    background: #ffffff !important;
+
+    border-top: 1px solid #eee8e1 !important;
+
+    color: #8a8f9c !important;
+
+    font-size: 11px !important;
+}
+
+.pos-footer strong {
+    color: #6f6257 !important;
+}
+
+.pos-footer span {
+    color: #b19c89 !important;
+}
+
+/* =========================================================
+   SIDEBAR WIDTH
+   ========================================================= */
+
+@media (min-width: 992px) {
+    .main-sidebar,
+    .main-sidebar::before {
+        width: 232px !important;
+    }
+
+    .content-wrapper,
+    .main-footer,
+    .main-header {
+        margin-left: 232px !important;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+    .main-header {
+        margin-left: 0 !important;
+    }
+
+    .content-wrapper,
+    .main-footer {
+        margin-left: 0 !important;
+    }
+}

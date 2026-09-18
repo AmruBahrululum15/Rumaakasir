@@ -1,0 +1,10 @@
+@extends('layouts.guest')
+@section('title', 'Daftar Akun')
+@section('content')
+<h2>Daftar akun</h2><p class="muted">Akun akan aktif setelah disetujui Atasan.</p>
+<form method="POST" action="{{ route('register') }}" data-loading>@csrf
+@foreach(['name'=>'Nama lengkap','username'=>'Username','email'=>'Email'] as $field => $label)<div class="form-group"><label for="{{ $field }}">{{ $label }}</label><div class="input-wrap"><i class="fas fa-{{ $field === 'email' ? 'envelope' : 'user' }}"></i><input id="{{ $field }}" class="form-control @error($field) invalid @enderror" type="{{ $field === 'email' ? 'email' : 'text' }}" name="{{ $field }}" value="{{ old($field) }}" required autocomplete="{{ $field }}"></div>@error($field)<div class="field-error">{{ $message }}</div>@enderror</div>@endforeach
+<div class="form-group"><label for="requested_role">Role yang diinginkan</label><select id="requested_role" name="requested_role" class="form-control" style="padding-left:14px" required><option value="">Pilih role</option>@foreach($registrationRoles as $role)<option value="{{ $role }}" @selected(old('requested_role') === $role)>{{ $role }}</option>@endforeach</select>@error('requested_role')<div class="field-error">{{ $message }}</div>@enderror</div>
+@foreach(['password'=>'Password','password_confirmation'=>'Konfirmasi password'] as $field => $label)<div class="form-group"><label for="{{ $field }}">{{ $label }}</label><div class="input-wrap"><i class="fas fa-lock"></i><input id="{{ $field }}" class="form-control @error($field) invalid @enderror" type="password" name="{{ $field }}" required autocomplete="new-password"><button class="toggle-password" type="button" data-password-toggle="{{ $field }}"><i class="fas fa-eye"></i></button></div>@error($field)<div class="field-error">{{ $message }}</div>@enderror</div>@endforeach
+<button class="btn" type="submit">Kirim registrasi</button></form><div class="auth-links"><a href="{{ route('login') }}">Sudah punya akun? Masuk</a></div>
+@endsection
