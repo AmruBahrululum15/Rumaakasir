@@ -11,6 +11,7 @@ use App\Models\Concerns\BelongsToBusiness;
 class Sale extends Model
 {
     use BelongsToBusiness, HasFactory;
+    use \App\Models\Concerns\BelongsToOutlet;
 
     protected $fillable = [
         'code',
@@ -24,7 +25,11 @@ class Sale extends Model
         'payment_method',
         'payment_status',
         'order_source',
+        'order_status',
         'table_id',
+        'loyalty_redeem_points',
+        'loyalty_discount',
+        'promotion_discount',
     ];
 
     protected $casts = [
@@ -34,11 +39,28 @@ class Sale extends Model
         'change' => 'decimal:2',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (Sale $sale) {
+            if (in_array($sale->order_source,['customer_portal','table_qr'],true) && $sale->payment_status==='PAID' && $sale->wasChanged('payment_status')) app(\App\Services\CustomerOrderNotifications::class)->send($sale,'payment_received');
+            if($sale->outlet_id && (preg_match('/^STOCK_RESTORED=1$/m',(string)$sale->notes) || (str_contains((string)$sale->getRawOriginal('notes'),'STOCK_RESERVED=1') && str_contains((string)$sale->notes,'STOCK_RESERVED=0')))) app(\App\Services\OutletInventory::class)->restoreAllocation($sale);
+            if ($sale->wasRecentlyCreated || $sale->wasChanged('payment_status')) app(\App\Services\LoyaltyService::class)->settle($sale);
+            if ($sale->wasRecentlyCreated || $sale->wasChanged('payment_status')) app(\App\Services\PortalPurchaseLink::class)->record($sale);
+        });
+    }
+
     public function saleDetails(): HasMany
     {
         return $this->hasMany(
             SaleDetail::class
         );
+    }
+
+    public function scopeValidForTotals(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        if(app(\App\Tenancy\TenantContext::class)->business()?->business_type!==null) {
+            $query->where(fn($q)=>$q->whereNull('sales.payment_status')->orWhereNotIn('sales.payment_status',['REFUNDED','VOIDED']));
+        }
     }
 
     public function customer(): BelongsTo
@@ -79,6 +101,7 @@ class Sale extends Model
 
     public function getOrderSourceDisplayAttribute(): string
     {
+        if ($this->order_source === 'customer_portal') return 'Customer Portal';
         return ($this->order_source ?: ($this->noteValue('ORDER_TYPE') === 'QR_TABLE' ? 'table_qr' : 'cashier')) === 'table_qr' ? 'QR Meja' : 'Kasir';
     }
 

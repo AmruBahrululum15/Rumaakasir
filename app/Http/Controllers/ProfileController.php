@@ -44,13 +44,13 @@ class ProfileController extends Controller
 
             // Hapus foto lama
             if ($user->foto) {
-                Storage::disk('public')->delete($user->foto);
+                Storage::disk($user->photoDisk())->delete($user->photoPath());
             }
 
             // Simpan foto baru
             $validated['foto'] = $request
                 ->file('foto')
-                ->store('profiles', 'public');
+                ->store('profiles', 'local');
         }
 
         /*
@@ -73,7 +73,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return Redirect::route('profile.edit')
+        return Redirect::route($request->routeIs('super-admin.profile.*') ? 'super-admin.profile.edit' : 'profile.edit')
             ->with('status', 'profile-updated');
     }
 
@@ -138,7 +138,7 @@ class ProfileController extends Controller
         */
 
         if ($user->foto) {
-            Storage::disk('public')->delete($user->foto);
+            Storage::disk($user->photoDisk())->delete($user->photoPath());
         }
 
         Auth::logout();

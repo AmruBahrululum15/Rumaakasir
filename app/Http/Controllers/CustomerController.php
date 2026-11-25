@@ -15,7 +15,18 @@ class CustomerController extends Controller
     {
         $search = trim((string) $request->get('search'));
 
-        $customers = Customer::query()
+        $businessId = $request->user()->business_id;
+        $summary = [
+            'total' => Customer::where('business_id', $businessId)->count(),
+            'transacting' => Customer::where('business_id', $businessId)->whereHas('sales')->count(),
+            'with_contact' => Customer::where('business_id', $businessId)->whereNotNull('phone')->where('phone', '!=', '')->count(),
+        ];
+        $customers = Customer::query()->where('business_id', $businessId)
+            ->withCount(['sales', 'bookings',
+                'sales as cashier_count' => fn($q) => $q->where(fn($q)=>$q->where('order_source','cashier')->orWhere(fn($q)=>$q->whereNull('order_source')->where(fn($q)=>$q->whereNull('notes')->orWhere('notes','not like','%ORDER_TYPE=QR_TABLE%')))),
+                'sales as qr_count' => fn($q) => $q->where(fn($q)=>$q->where('order_source','table_qr')->orWhere(fn($q)=>$q->whereNull('order_source')->where('notes','like','%ORDER_TYPE=QR_TABLE%'))),
+                'sales as portal_count' => fn($q) => $q->where('order_source','customer_portal'),
+            ])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($customerQuery) use ($search) {
                     $customerQuery
@@ -28,7 +39,7 @@ class CustomerController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('customers.index', compact('customers', 'search'));
+        return view('customers.index', compact('customers', 'search', 'summary'));
     }
 
     /**

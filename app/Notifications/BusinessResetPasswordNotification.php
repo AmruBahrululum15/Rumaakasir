@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\Setting;
+use App\Models\PlatformSetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -20,20 +20,22 @@ class BusinessResetPasswordNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $settings = Setting::allAsArray();
-        $businessName = ($settings['app_name'] ?? '') ?: 'POS Enterprise';
+        $platform = PlatformSetting::find(1) ?? new PlatformSetting;
+        $businessName = $platform->brandingName();
         $url = url(route('password.reset', [
             'token' => $this->token,
-            'email' => $notifiable->getEmailForPasswordReset(),
+            'username' => $notifiable->username,
         ], false));
 
         return (new MailMessage)
             ->subject($businessName.' - Atur Ulang Password')
             ->view('emails.auth.password-reset', [
                 'businessName' => $businessName,
-                'businessLogo' => ($settings['sidebar_logo'] ?? null) ?: ($settings['app_logo'] ?? null),
+                'businessLogo' => $platform->brandingLogo(),
                 'url' => $url,
                 'expiry' => config('auth.passwords.users.expire'),
+                'username' => $notifiable->username,
+                'storeName' => $notifiable->business?->name ?? 'Platform',
             ]);
     }
 }

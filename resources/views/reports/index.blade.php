@@ -3,577 +3,69 @@
 @section('title', 'Laporan')
 
 @section('content_header')
-
-<div class="d-flex justify-content-between align-items-center">
-
-    <div>
-
-        <h2 class="fw-bold mb-1">
-            Laporan
-        </h2>
-
-        <p class="text-muted mb-0">
-            Analisis penjualan dan pembelian berdasarkan periode
-        </p>
-
-    </div>
-
+<div class="reports-heading">
+    <span class="reports-eyebrow">ANALISIS BISNIS</span>
+    <h2>Laporan</h2>
+    <p>Analisis penjualan dan pembelian berdasarkan periode.</p>
 </div>
-
 @stop
 
-
 @section('content')
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-
-    <div>
-        <h4 class="mb-0">
-            {{ $reportTitle }}
-        </h4>
-
-        <small class="text-muted">
-            {{ $periodDescription }}
-        </small>
-    </div>
-
-    <div class="btn-group">
-
-        {{-- EXPORT EXCEL --}}
-        <a href="{{ route('reports.export.excel', request()->query()) }}"
-           class="btn btn-success">
-
-            <i class="fas fa-file-excel mr-1"></i>
-            Export Excel
-
-        </a>
-
-        {{-- EXPORT PDF --}}
-        <a href="{{ route('reports.pdf', request()->query()) }}"
-           class="btn btn-danger">
-
-            <i class="fas fa-file-pdf mr-1"></i>
-            Export PDF
-
-        </a>
-
-    </div>
-
-</div>
-{{-- ========================================================= --}}
-{{-- FILTER LAPORAN --}}
-{{-- ========================================================= --}}
-
-<div class="card">
-
-    <div class="card-header bg-white">
-
-        <h5 class="mb-0">
-
-            <i class="fas fa-filter mr-2"></i>
-
-            Filter Laporan
-
-        </h5>
-
-    </div>
-
-
-    <div class="card-body">
-
-        <form
-            action="{{ route('reports.index') }}"
-            method="GET"
-            id="filterForm"
-        >
-
-            <div class="row align-items-end">
-
-
-                {{-- JENIS LAPORAN --}}
-
-                <div class="col-md-3">
-
-                    <div class="form-group">
-
-                        <label>
-                            Jenis Laporan
-                        </label>
-
-                        <select
-                            name="report_type"
-                            id="report_type"
-                            class="form-control"
-                        >
-
-                            <option
-                                value="sales"
-                                {{ $reportType === 'sales' ? 'selected' : '' }}
-                            >
-                                Penjualan
-                            </option>
-
-                            <option
-                                value="purchases"
-                                {{ $reportType === 'purchases' ? 'selected' : '' }}
-                            >
-                                Pembelian
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                {{-- PERIODE --}}
-
-                <div class="col-md-3">
-
-                    <div class="form-group">
-
-                        <label>
-                            Periode
-                        </label>
-
-                        <select
-                            name="period"
-                            id="period"
-                            class="form-control"
-                        >
-
-                            <option
-                                value="daily"
-                                {{ $period === 'daily' ? 'selected' : '' }}
-                            >
-                                Per Hari
-                            </option>
-
-                            <option
-                                value="monthly"
-                                {{ $period === 'monthly' ? 'selected' : '' }}
-                            >
-                                Per Bulan
-                            </option>
-
-                            <option
-                                value="yearly"
-                                {{ $period === 'yearly' ? 'selected' : '' }}
-                            >
-                                Per Tahun
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                {{-- TANGGAL --}}
-
-                <div class="col-md-3 filter-date">
-
-                    <div class="form-group">
-
-                        <label>
-                            Tanggal
-                        </label>
-
-                        <input
-                            type="date"
-                            name="date"
-                            class="form-control"
-                            value="{{ $selectedDate }}"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                {{-- BULAN --}}
-
-                <div class="col-md-3 filter-month">
-
-                    <div class="form-group">
-
-                        <label>
-                            Bulan
-                        </label>
-
-                        <input
-                            type="month"
-                            name="month"
-                            class="form-control"
-                            value="{{ $selectedMonth }}"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                {{-- TAHUN --}}
-
-                <div class="col-md-3 filter-year">
-
-                    <div class="form-group">
-
-                        <label>
-                            Tahun
-                        </label>
-
-                        <select
-                            name="year"
-                            class="form-control"
-                        >
-
-                            @for(
-                                $year = date('Y');
-                                $year >= 2020;
-                                $year--
-                            )
-
-                                <option
-                                    value="{{ $year }}"
-                                    {{ (int) $selectedYear === $year ? 'selected' : '' }}
-                                >
-                                    {{ $year }}
-                                </option>
-
-                            @endfor
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                {{-- BUTTON --}}
-
-               <div class="col-md-3">
-
-    <div class="form-group">
-
-        <button
-            type="submit"
-            class="btn btn-primary btn-block"
-        >
-            <i class="fas fa-search mr-1"></i>
-            Tampilkan Laporan
-        </button>
-
-        
-
-    </div>
-
-</div>
-                </div>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</div>
-
-
-{{-- ========================================================= --}}
-{{-- PERIODE AKTIF --}}
-{{-- ========================================================= --}}
-
-<div class="alert alert-info">
-
-    <i class="fas fa-calendar-alt mr-2"></i>
-
-    Menampilkan
-
-    <strong>
-        {{ $reportTitle }}
-    </strong>
-
-    -
-
-    <strong>
-        {{ $periodTitle }}
-    </strong>
-
-    :
-
-    <strong>
-        {{ $periodDescription }}
-    </strong>
-
-</div>
-
-
-{{-- ========================================================= --}}
-{{-- STATISTIK PENJUALAN --}}
-{{-- ========================================================= --}}
-
-@if($reportType === 'sales')
-
-<div class="row">
-
-    {{-- TRANSAKSI --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-primary">
-
-            <div class="inner">
-
-                <h3>
-                    {{ number_format(
-                        $totalSalesTransactions,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Total Transaksi
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-shopping-cart"></i>
-
-            </div>
-
+<link rel="stylesheet" href="{{ asset('css/reports.css') }}">
+<div class="reports-page">
+    <div class="reports-toolbar">
+        <div><h3>{{ $reportTitle }}</h3><span class="reports-muted">{{ $periodDescription }}</span></div>
+        <div class="reports-exports">
+            <a href="{{ route('reports.export.excel', request()->query()) }}" class="reports-export reports-excel"><i class="fas fa-file-excel" aria-hidden="true"></i> Export Excel</a>
+            <a href="{{ route('reports.pdf', request()->query()) }}" class="reports-export reports-pdf"><i class="fas fa-file-pdf" aria-hidden="true"></i> Export PDF</a>
         </div>
-
     </div>
-
-
-    {{-- OMZET --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-success">
-
-            <div class="inner">
-
-                <h3>
-                    Rp {{ number_format(
-                        $totalSales,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Total Penjualan
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-money-bill-wave"></i>
-
-            </div>
-
+    <section class="card reports-filter">
+        <div class="card-header"><h5><i class="fas fa-sliders-h" aria-hidden="true"></i> Filter laporan</h5><p>Tentukan jenis dan periode laporan yang ingin Anda lihat.</p></div>
+        <div class="card-body">
+            <form action="{{ route('reports.index') }}" method="GET" id="filterForm" class="reports-filter-grid">
+                <div><label for="report_type">Jenis laporan</label><select name="report_type" id="report_type" class="form-control">
+                    <option value="sales" {{ $reportType === 'sales' ? 'selected' : '' }}>Penjualan</option>
+                    <option value="purchases" {{ $reportType === 'purchases' ? 'selected' : '' }}>Pembelian</option>
+                </select></div>
+                <div><label for="period">Periode</label><select name="period" id="period" class="form-control">
+                    <option value="daily" {{ $period === 'daily' ? 'selected' : '' }}>Per Hari</option>
+                    <option value="monthly" {{ $period === 'monthly' ? 'selected' : '' }}>Per Bulan</option>
+                    <option value="yearly" {{ $period === 'yearly' ? 'selected' : '' }}>Per Tahun</option>
+                </select></div>
+                <div class="filter-date" style="display: {{ $period === 'daily' ? 'block' : 'none' }}"><label for="report-date">Tanggal</label><input type="date" id="report-date" name="date" class="form-control" value="{{ $selectedDate }}"></div>
+                <div class="filter-month" style="display: {{ $period === 'monthly' ? 'block' : 'none' }}"><label for="report-month">Bulan</label><input type="month" id="report-month" name="month" class="form-control" value="{{ $selectedMonth }}"></div>
+                <div class="filter-year" style="display: {{ $period === 'yearly' ? 'block' : 'none' }}"><label for="report-year">Tahun</label><select id="report-year" name="year" class="form-control">
+                    @for($year = date('Y'); $year >= 2020; $year--)
+                        <option value="{{ $year }}" {{ (int) $selectedYear === $year ? 'selected' : '' }}>{{ $year }}</option>
+                    @endfor
+                </select></div>
+                <button type="submit" class="reports-submit"><i class="fas fa-search" aria-hidden="true"></i> Tampilkan Laporan</button>
+            </form>
         </div>
-
+    </section>
+    <div class="reports-period"><span><i class="far fa-calendar-alt" aria-hidden="true"></i> {{ $periodTitle }} <strong>{{ $periodDescription }}</strong></span><span>{{ $reportTitle }}</span></div>
+    <div class="reports-stats">
+        <article class="reports-stat">
+            <div class="reports-stat-top"><span>Total transaksi{{ $reportType === 'purchases' ? ' pembelian' : '' }}</span><span class="reports-stat-icon"><i class="fas fa-receipt" aria-hidden="true"></i></span></div>
+            <strong>{{ number_format($reportType === 'sales' ? $totalSalesTransactions : $totalPurchaseTransactions, 0, ',', '.') }}</strong>
+            <small>Transaksi pada periode terpilih</small>
+        </article>
+        <article class="reports-stat reports-stat-revenue">
+            <div class="reports-stat-top"><span>Total {{ $reportType === 'sales' ? 'penjualan' : 'pembelian' }}</span><span class="reports-stat-icon"><i class="fas fa-wallet" aria-hidden="true"></i></span></div>
+            <strong>Rp {{ number_format($reportType === 'sales' ? $totalSales : $totalPurchases, 0, ',', '.') }}</strong>
+            <small>Nilai {{ $reportType === 'sales' ? 'penjualan' : 'pembelian' }} pada periode terpilih</small>
+        </article>
+        <article class="reports-stat">
+            <div class="reports-stat-top"><span>Produk {{ $reportType === 'sales' ? 'terjual' : 'dibeli' }}</span><span class="reports-stat-icon reports-stat-icon-neutral"><i class="fas fa-box" aria-hidden="true"></i></span></div>
+            <strong>{{ number_format($reportType === 'sales' ? $totalProductsSold : $totalProductsPurchased, 0, ',', '.') }}</strong>
+            <small>Total unit produk</small>
+        </article>
     </div>
-
-
-    {{-- PRODUK --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-info">
-
-            <div class="inner">
-
-                <h3>
-                    {{ number_format(
-                        $totalProductsSold,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Produk Terjual
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-box"></i>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-@endif
-
-
-{{-- ========================================================= --}}
-{{-- STATISTIK PEMBELIAN --}}
-{{-- ========================================================= --}}
-
-@if($reportType === 'purchases')
-
-<div class="row">
-
-    {{-- TRANSAKSI --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-primary">
-
-            <div class="inner">
-
-                <h3>
-                    {{ number_format(
-                        $totalPurchaseTransactions,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Total Transaksi Pembelian
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-shopping-bag"></i>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- TOTAL PEMBELIAN --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-danger">
-
-            <div class="inner">
-
-                <h3>
-                    Rp {{ number_format(
-                        $totalPurchases,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Total Pembelian
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-money-bill-wave"></i>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- PRODUK --}}
-
-    <div class="col-md-4">
-
-        <div class="small-box bg-warning">
-
-            <div class="inner">
-
-                <h3>
-                    {{ number_format(
-                        $totalProductsPurchased,
-                        0,
-                        ',',
-                        '.'
-                    ) }}
-                </h3>
-
-                <p>
-                    Produk Dibeli
-                </p>
-
-            </div>
-
-            <div class="icon">
-
-                <i class="fas fa-boxes"></i>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-@endif
-
-
-{{-- ========================================================= --}}
-{{-- GRAFIK --}}
-{{-- ========================================================= --}}
-
-<div class="card">
-
-    <div class="card-header bg-white">
-
-        <h5 class="mb-0">
-
-            <i class="fas fa-chart-line mr-2"></i>
-
-            Grafik
-            {{ $reportType === 'sales'
-                ? 'Penjualan'
-                : 'Pembelian'
-            }}
-
-        </h5>
-
-    </div>
-
-
-    <div class="card-body">
-
-        <div style="height: 350px;">
-
-            <canvas id="reportChart"></canvas>
-
-        </div>
-
-    </div>
-
-</div>
-
+    <section class="card reports-chart">
+        <div class="card-header"><h5><i class="fas fa-chart-line" aria-hidden="true"></i> Grafik {{ $reportType === 'sales' ? 'Penjualan' : 'Pembelian' }}</h5><p>Pergerakan nilai transaksi selama periode terpilih.</p></div>
+        <div class="card-body"><div class="reports-chart-canvas"><canvas id="reportChart" role="img" aria-label="Grafik nilai transaksi {{ $periodDescription }}"></canvas></div></div>
+    </section>
 
 {{-- ========================================================= --}}
 {{-- PRODUK TERLARIS PENJUALAN --}}
@@ -1408,6 +900,7 @@
 @endif
 
 
+</div>
 @stop
 
 
@@ -1543,7 +1036,13 @@ document.addEventListener(
 
                         tension: 0.3,
 
-                        borderWidth: 2
+                        borderWidth: 2,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#f97316',
+                        pointRadius: 3,
+                        pointHoverRadius: 5
                     }
 
                 ];
@@ -1561,7 +1060,13 @@ document.addEventListener(
 
                         tension: 0.3,
 
-                        borderWidth: 2
+                        borderWidth: 2,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#f97316',
+                        pointRadius: 3,
+                        pointHoverRadius: 5
                     }
 
                 ];
@@ -1607,7 +1112,8 @@ document.addEventListener(
 
                             legend: {
 
-                                display: true
+                                display: true,
+                                labels: { usePointStyle: true, boxWidth: 8, color: '#64748b' }
 
                             },
 
@@ -1636,10 +1142,13 @@ document.addEventListener(
                         },
 
                         scales: {
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
 
                             y: {
 
                                 beginAtZero: true,
+                                border: { display: false },
+                                grid: { color: '#f1f5f9' },
 
                                 ticks: {
 

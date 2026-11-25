@@ -31,19 +31,40 @@ class AccountSetupController extends Controller
 
         abort_unless($user->must_change_credentials, 403);
 
-        $validated = $request->validate([
-            'username' => ['required', 'string', 'alpha_dash', 'max:100', Rule::unique('users', 'username')->ignore($user->id)],
+        $isSuperAdmin = $user->hasRole('Super Admin');
+        $rules = [
             'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        ];
 
-        $user->forceFill([
-            'username' => $validated['username'],
+        if ($isSuperAdmin) {
+            $rules['current_password'] = ['required', 'string'];
+        } else {
+            $rules['username'] = ['required', 'string', 'alpha_dash', 'max:100', Rule::unique('users', 'username')->ignore($user->id)];
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($isSuperAdmin && ! Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'Password saat ini tidak sesuai.',
+            ]);
+        }
+
+        $attributes = [
             'password' => Hash::make($validated['password']),
             'must_change_credentials' => false,
-        ])->save();
+        ];
+
+        if (! $isSuperAdmin) {
+            $attributes['username'] = $validated['username'];
+        }
+
+        $user->forceFill($attributes)->save();
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Pengaturan akun berhasil. Selamat datang di POS Enterprise.');
+        return redirect()->route(
+            $isSuperAdmin ? 'super-admin.dashboard' : 'dashboard'
+        )->with('success', 'Pengaturan akun berhasil. Selamat datang di POS Enterprise.');
     }
 }

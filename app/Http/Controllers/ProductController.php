@@ -142,13 +142,13 @@ class ProductController extends Controller
             'category_id' => [
                 'required',
                 'integer',
-                'exists:categories,id'
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())->whereNull('deleted_at')
             ],
 
             'supplier_id' => [
                 'nullable',
                 'integer',
-                'exists:suppliers,id',
+                \Illuminate\Validation\Rule::exists('suppliers', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id()),
             ],
 
             'price' => [
@@ -360,13 +360,13 @@ class ProductController extends Controller
             'category_id' => [
                 'required',
                 'integer',
-                'exists:categories,id'
+                \Illuminate\Validation\Rule::exists('categories', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())->whereNull('deleted_at')
             ],
 
             'supplier_id' => [
                 'nullable',
                 'integer',
-                'exists:suppliers,id',
+                \Illuminate\Validation\Rule::exists('suppliers', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id()),
             ],
 
             'price' => [

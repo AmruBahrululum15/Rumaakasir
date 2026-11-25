@@ -9,6 +9,7 @@ use App\Models\Concerns\BelongsToBusiness;
 class Purchase extends Model
 {
     use BelongsToBusiness, HasFactory;
+    use \App\Models\Concerns\BelongsToOutlet;
 
     protected $fillable = [
         'code',

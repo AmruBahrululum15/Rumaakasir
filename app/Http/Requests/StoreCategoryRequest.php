@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Tenancy\TenantContext;
 
 class StoreCategoryRequest extends FormRequest
 {
@@ -14,8 +16,8 @@ class StoreCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|max:100|unique:categories,name',
-            'description' => 'nullable|max:500',
+            'name' => ['required', 'string', 'max:100', Rule::unique('categories', 'name')->where('business_id', app(TenantContext::class)->id())],
+            'description' => 'nullable|string',
             'status' => 'required|boolean',
         ];
     }

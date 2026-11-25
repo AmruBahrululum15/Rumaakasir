@@ -235,7 +235,11 @@
                 {{-- DETAIL PRODUK --}}
                 {{-- ================================================= --}}
 
-                @foreach($sale->saleDetails as $detail)
+                @if($sale->order_source==='reservation')
+@php($receiptBooking=\App\Models\Booking::where('business_id',$sale->business_id)->where('sale_id',$sale->id)->first())
+@if($receiptBooking)<div class="mb-3"><div class="font-weight-bold">{{ $receiptBooking->service_name }}</div><div class="d-flex justify-content-between"><span>{{ $receiptBooking->capacity_units }} unit · {{ $receiptBooking->code }}</span><strong>Rp {{ number_format($receiptBooking->total,0,',','.') }}</strong></div></div>@endif
+@endif
+@foreach($sale->saleDetails as $detail)
 
                     <div class="mb-3">
 
@@ -305,6 +309,8 @@
 
 
                 {{-- ================================================= --}}
+                @if((float)$sale->promotion_discount > 0)<p>Diskon promo: Rp{{ number_format($sale->promotion_discount,0,',','.') }}</p>@endif
+                @if((float)$sale->loyalty_discount > 0)<p>Redeem {{ $sale->loyalty_redeem_points }} poin: Rp{{ number_format($sale->loyalty_discount,0,',','.') }}</p>@endif
                 {{-- TOTAL --}}
                 {{-- ================================================= --}}
 

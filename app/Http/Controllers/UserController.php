@@ -17,6 +17,10 @@ class UserController extends Controller
     {
         $query = User::query();
 
+        if (! $request->user()->hasRole('Super Admin')) {
+            $query->whereDoesntHave('roles', fn ($roleQuery) => $roleQuery->where('name', 'Super Admin'));
+        }
+
         /*
         |--------------------------------------------------------------------------
         | SEARCH
@@ -80,6 +84,7 @@ class UserController extends Controller
         */
         $roles = Role::query()
             ->where('guard_name', 'web')
+            ->when(! $request->user()->hasRole('Super Admin'), fn ($query) => $query->where('name', '!=', 'Super Admin'))
             ->orderBy('name')
             ->get();
 
@@ -92,10 +97,11 @@ class UserController extends Controller
     /**
      * Form tambah user.
      */
-    public function create()
+    public function create(Request $request)
     {
         $roles = Role::query()
             ->where('guard_name', 'web')
+            ->when(! $request->user()->hasRole('Super Admin'), fn ($query) => $query->where('name', '!=', 'Super Admin'))
             ->orderBy('name')
             ->get();
 
@@ -107,6 +113,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if($request->input('role') === 'Super Admin' && ! $request->user()->hasRole('Super Admin'), 403);
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -125,7 +132,6 @@ class UserController extends Controller
                 'required',
                 'email',
                 'max:255',
-                'unique:users,email',
             ],
 
             'password' => [
@@ -173,7 +179,6 @@ class UserController extends Controller
             'username.required' => 'Username wajib diisi.',
             'username.unique' => 'Username sudah digunakan.',
             'email.required' => 'Email wajib diisi.',
-            'email.unique' => 'Email sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak sama.',
             'password.min' => 'Password minimal 6 karakter.',
             'nik.unique' => 'NIK sudah digunakan.',
@@ -202,7 +207,7 @@ class UserController extends Controller
         if ($request->hasFile('foto')) {
             $validated['foto'] = $request
                 ->file('foto')
-                ->store('users', 'public');
+                ->store('users', 'local');
         }
 
         /*
@@ -211,6 +216,7 @@ class UserController extends Controller
         |--------------------------------------------------------------------------
         */
         $role = $validated['role'];
+        abort_if($role === 'Super Admin' && ! $request->user()->hasRole('Super Admin'), 403);
 
         unset($validated['role']);
 
@@ -236,8 +242,9 @@ class UserController extends Controller
     /**
      * Menampilkan detail user.
      */
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
+        $this->guardSuperAdminTarget($request, $user);
         $user->load('roles');
 
         return view('users.show', compact('user'));
@@ -246,12 +253,14 @@ class UserController extends Controller
     /**
      * Form edit user.
      */
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
+        $this->guardSuperAdminTarget($request, $user);
         $user->load('roles');
 
         $roles = Role::query()
             ->where('guard_name', 'web')
+            ->when(! $request->user()->hasRole('Super Admin'), fn ($query) => $query->where('name', '!=', 'Super Admin'))
             ->orderBy('name')
             ->get();
 
@@ -266,6 +275,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->guardSuperAdminTarget($request, $user);
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -285,8 +295,6 @@ class UserController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')
-                    ->ignore($user->id),
             ],
 
             'password' => [
@@ -335,7 +343,6 @@ class UserController extends Controller
             'username.required' => 'Username wajib diisi.',
             'username.unique' => 'Username sudah digunakan.',
             'email.required' => 'Email wajib diisi.',
-            'email.unique' => 'Email sudah digunakan.',
             'password.confirmed' => 'Konfirmasi password tidak sama.',
             'password.min' => 'Password minimal 6 karakter.',
             'nik.unique' => 'NIK sudah digunakan.',
@@ -367,6 +374,7 @@ class UserController extends Controller
         |--------------------------------------------------------------------------
         */
         $role = $validated['role'];
+        abort_if($role === 'Super Admin' && ! $request->user()->hasRole('Super Admin'), 403);
 
         unset($validated['role']);
 
@@ -393,7 +401,7 @@ class UserController extends Controller
             | Hapus foto lama
             */
             if ($user->foto) {
-                Storage::disk('public')->delete($user->foto);
+                Storage::disk($user->photoDisk())->delete($user->photoPath());
             }
 
             /*
@@ -401,7 +409,7 @@ class UserController extends Controller
             */
             $validated['foto'] = $request
                 ->file('foto')
-                ->store('users', 'public');
+                ->store('users', 'local');
         }
 
         /*
@@ -426,8 +434,9 @@ class UserController extends Controller
     /**
      * Hapus user.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
+        $this->guardSuperAdminTarget($request, $user);
         /*
         | Jangan sampai user yang sedang login terhapus.
         */
@@ -441,7 +450,7 @@ class UserController extends Controller
         | Hapus foto.
         */
         if ($user->foto) {
-            Storage::disk('public')->delete($user->foto);
+            Storage::disk($user->photoDisk())->delete($user->photoPath());
         }
 
         /*
@@ -452,5 +461,13 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->with('success', 'User berhasil dihapus.');
+    }
+
+    private function guardSuperAdminTarget(Request $request, User $user): void
+    {
+        abort_if(
+            $user->hasRole('Super Admin') && ! $request->user()->hasRole('Super Admin'),
+            403
+        );
     }
 }

@@ -37,9 +37,9 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalTransactions = Sale::count();
+        $totalTransactions = Sale::validForTotals()->count();
 
-        $totalRevenue = Sale::sum('total');
+        $totalRevenue = Sale::validForTotals()->sum('total');
 
 
         /*
@@ -48,7 +48,7 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $totalProductsSold = DB::table('sale_details')
+        $totalProductsSold = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))
             ->where('business_id', $businessId)
             ->sum('quantity');
 
@@ -76,12 +76,12 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $todayTransactions = Sale::whereDate(
+        $todayTransactions = Sale::validForTotals()->whereDate(
             'sale_date',
             now()->toDateString()
         )->count();
 
-        $todayRevenue = Sale::whereDate(
+        $todayRevenue = Sale::validForTotals()->whereDate(
             'sale_date',
             now()->toDateString()
         )->sum('total');
@@ -93,7 +93,7 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $monthlyRevenue = Sale::whereYear(
+        $monthlyRevenue = Sale::validForTotals()->whereYear(
             'sale_date',
             now()->year
         )
@@ -124,7 +124,7 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $bestProducts = DB::table('sale_details')
+        $bestProducts = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))
             ->join(
                 'products',
                 'products.id',
@@ -185,7 +185,7 @@ class DashboardController extends Controller
                 $date->format('d M');
 
             $salesChartData[] =
-                (float) Sale::whereDate(
+                (float) Sale::validForTotals()->whereDate(
                     'sale_date',
                     $date->toDateString()
                 )->sum('total');
@@ -210,7 +210,7 @@ class DashboardController extends Controller
                 $date->translatedFormat('M Y');
 
             $monthlyChartData[] =
-                (float) Sale::whereYear(
+                (float) Sale::validForTotals()->whereYear(
                     'sale_date',
                     $date->year
                 )

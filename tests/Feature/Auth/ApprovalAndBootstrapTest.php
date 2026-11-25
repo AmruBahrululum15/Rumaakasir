@@ -5,7 +5,8 @@ namespace Tests\Feature\Auth;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\InitialSupervisorSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\SuperAdminTestAccountSeeder;
+use Tests\Concerns\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -24,7 +25,7 @@ class ApprovalAndBootstrapTest extends TestCase
                 'is_active' => false,
             ]);
 
-            $this->post('/login', ['login' => $user->email, 'password' => 'password'])
+            $this->post('/login', ['login' => $user->username, 'password' => 'password'])
                 ->assertSessionHasErrors('login');
             $this->assertGuest();
         }
@@ -115,16 +116,48 @@ class ApprovalAndBootstrapTest extends TestCase
         $this->post('/login', ['login' => 'atasan', 'password' => 'atasan123'])->assertSessionHasErrors('login');
     }
 
-    public function test_login_branding_uses_the_existing_settings_source_and_fallback(): void
+    public function test_super_admin_must_change_the_initial_password_before_accessing_dashboard(): void
+    {
+        $this->seed(SuperAdminTestAccountSeeder::class);
+        $superAdmin = User::where('username', 'superadmin')->firstOrFail();
+
+        $this->assertTrue($superAdmin->hasRole('Super Admin'));
+        $this->assertTrue($superAdmin->must_change_credentials);
+        $this->assertTrue(Hash::check('superadmin123', $superAdmin->password));
+
+        $this->post('/login', ['login' => 'superadmin', 'password' => 'superadmin123'])
+            ->assertRedirect(route('first-login.edit', false));
+        $this->get('/dashboard')->assertRedirect(route('first-login.edit', false));
+        $this->get('/account/first-login')->assertSee('Password saat ini');
+
+        $this->put('/account/first-login', [
+            'current_password' => 'superadmin123',
+            'password' => 'superadmin-password-baru',
+            'password_confirmation' => 'superadmin-password-baru',
+        ])->assertRedirect(route('super-admin.dashboard', false));
+
+        $superAdmin->refresh();
+        $this->assertFalse($superAdmin->must_change_credentials);
+        $this->assertTrue(Hash::check('superadmin-password-baru', $superAdmin->password));
+
+        $this->post('/logout');
+        $this->post('/login', ['login' => 'superadmin', 'password' => 'superadmin-password-baru'])
+            ->assertRedirect(route('super-admin.dashboard', false));
+    }
+
+    public function test_login_uses_rumaakasir_branding_and_platform_logo(): void
     {
         Setting::setValue('app_name', 'Toko Contoh');
         Setting::setValue('app_logo', 'settings/logo.png');
+        \App\Models\PlatformSetting::updateOrCreate(['id' => 1], ['app_name' => 'Platform Test', 'logo' => 'storage/platform/logo.png']);
 
         $this->get('/login')->assertOk()
-            ->assertSee('Toko Contoh')
-            ->assertSee('storage/settings/logo.png');
+            ->assertSee('Platform Test')
+            ->assertSee('storage/platform/logo.png')
+            ->assertDontSee('Toko Contoh')->assertDontSee('storage/settings/logo.png');
 
-        Setting::setValue('app_name', '');
-        $this->get('/login')->assertSee('POS Enterprise');
+        \App\Models\PlatformSetting::find(1)->update(['app_name' => '', 'logo' => null]);
+        config(['app.name' => 'Configured Platform']);
+        $this->get('/login')->assertSee('Rumaakasir')->assertSee('All rights reserved.')->assertDontSee('Configured Platform')->assertDontSee('Toko Contoh');
     }
 }

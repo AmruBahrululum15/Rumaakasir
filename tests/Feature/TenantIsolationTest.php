@@ -6,7 +6,7 @@ use App\Models\Business;
 use App\Models\Category;
 use App\Models\User;
 use App\Tenancy\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -20,8 +20,9 @@ class TenantIsolationTest extends TestCase
         $firstBusiness = $firstUser->business;
         $this->assertSame($firstUser->id, $firstBusiness->fresh()->owner_id);
         $secondBusiness = Business::create(['name' => 'Toko Kedua', 'slug' => 'toko-kedua']);
+        app(TenantContext::class)->set($secondBusiness);
         $secondUser = User::factory()->create();
-        $secondUser->update(['business_id' => $secondBusiness->id]);
+        $this->assertSame($secondBusiness->id, $secondUser->business_id);
 
         app(TenantContext::class)->set($firstBusiness);
         $firstCategory = Category::create(['name' => 'Kategori Satu', 'slug' => 'kategori-satu']);

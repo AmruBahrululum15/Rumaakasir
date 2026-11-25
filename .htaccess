@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # XAMPP may expose the project directory rather than only public/.
+    # Private storage must never be served from that directory.
+    RewriteRule ^storage(/|$) - [F,L,NC]
+</IfModule>

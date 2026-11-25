@@ -94,7 +94,7 @@ class ReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $salesQuery = Sale::query();
+        $salesQuery = Sale::validForTotals();
 
         if ($period === 'daily') {
 
@@ -174,7 +174,7 @@ class ReportController extends Controller
 
         if ($saleIds->isNotEmpty()) {
 
-            $totalProductsSold = DB::table('sale_details')
+            $totalProductsSold = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))->where('sale_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
                 ->whereIn(
                     'sale_id',
                     $saleIds
@@ -198,7 +198,7 @@ class ReportController extends Controller
 
         if ($purchaseIds->isNotEmpty()) {
 
-            $totalProductsPurchased = DB::table('purchase_details')
+            $totalProductsPurchased = DB::table('purchase_details')->whereIn('purchase_details.purchase_id', \App\Models\Purchase::select('id'))->where('purchase_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
                 ->whereIn(
                     'purchase_id',
                     $purchaseIds
@@ -253,7 +253,7 @@ class ReportController extends Controller
 
         if ($saleIds->isNotEmpty()) {
 
-            $bestSalesProducts = DB::table('sale_details')
+            $bestSalesProducts = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))->where('sale_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
                 ->join(
                     'products',
                     'products.id',
@@ -293,7 +293,7 @@ class ReportController extends Controller
 
         if ($purchaseIds->isNotEmpty()) {
 
-            $bestPurchaseProducts = DB::table('purchase_details')
+            $bestPurchaseProducts = DB::table('purchase_details')->whereIn('purchase_details.purchase_id', \App\Models\Purchase::select('id'))->where('purchase_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
                 ->join(
                     'products',
                     'products.id',
@@ -333,7 +333,7 @@ class ReportController extends Controller
 
         if ($purchaseIds->isNotEmpty()) {
 
-            $topSuppliers = DB::table('purchases')
+            $topSuppliers = DB::table('purchases')->whereIn('purchases.id', \App\Models\Purchase::select('id'))->where('purchases.business_id', app(\App\Tenancy\TenantContext::class)->id())
                 ->join(
                     'suppliers',
                     'suppliers.id',
@@ -890,7 +890,7 @@ public function pdf(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    $salesQuery = Sale::query();
+    $salesQuery = Sale::validForTotals();
 
     if ($period === 'daily') {
 
@@ -976,7 +976,7 @@ public function pdf(Request $request)
 
     if ($saleIds->count() > 0) {
 
-        $totalProductsSold = DB::table('sale_details')
+        $totalProductsSold = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))->where('sale_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
             ->whereIn(
                 'sale_id',
                 $saleIds
@@ -1005,7 +1005,7 @@ public function pdf(Request $request)
 
     if ($purchaseIds->count() > 0) {
 
-        $totalProductsPurchased = DB::table('purchase_details')
+        $totalProductsPurchased = DB::table('purchase_details')->whereIn('purchase_details.purchase_id', \App\Models\Purchase::select('id'))->where('purchase_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
             ->whereIn(
                 'purchase_id',
                 $purchaseIds
@@ -1024,7 +1024,7 @@ public function pdf(Request $request)
 
     if ($saleIds->count() > 0) {
 
-        $bestSalesProducts = DB::table('sale_details')
+        $bestSalesProducts = DB::table('sale_details')->whereIn('sale_details.sale_id', \App\Models\Sale::validForTotals()->select('id'))->where('sale_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
             ->join(
                 'products',
                 'products.id',
@@ -1065,7 +1065,7 @@ public function pdf(Request $request)
 
     if ($purchaseIds->count() > 0) {
 
-        $bestPurchaseProducts = DB::table('purchase_details')
+        $bestPurchaseProducts = DB::table('purchase_details')->whereIn('purchase_details.purchase_id', \App\Models\Purchase::select('id'))->where('purchase_details.business_id', app(\App\Tenancy\TenantContext::class)->id())
             ->join(
                 'products',
                 'products.id',
@@ -1106,7 +1106,7 @@ public function pdf(Request $request)
 
     if ($purchaseIds->count() > 0) {
 
-        $topSuppliers = DB::table('purchases')
+        $topSuppliers = DB::table('purchases')->whereIn('purchases.id', \App\Models\Purchase::select('id'))->where('purchases.business_id', app(\App\Tenancy\TenantContext::class)->id())
             ->join(
                 'suppliers',
                 'suppliers.id',

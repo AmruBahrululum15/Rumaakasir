@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Concerns\BelongsToBusiness;
 class PurchaseDetail extends Model
 {
+    protected static function booted():void {static::created(fn($line)=>app(\App\Services\OutletInventory::class)->purchaseLine($line));}
     use BelongsToBusiness;
     protected $fillable = [
         'purchase_id',

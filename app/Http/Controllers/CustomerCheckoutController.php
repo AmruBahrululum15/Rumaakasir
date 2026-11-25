@@ -426,7 +426,15 @@ class CustomerCheckoutController extends Controller
 
                     $customerPhone = trim($validated['customer_phone']);
 
+                    $portalAccount = auth('customer')->user();
+                    if ($portalAccount && $portalAccount->status === 'active' && app(\App\Services\CustomerPortal::class)->active($table->business)) {
+                        $membership = app(\App\Services\CustomerPortal::class)->join($table->business, $portalAccount);
+                        $customer = Customer::where('business_id', $table->business_id)->findOrFail($membership->customer_id);
+                    } else {
+                        $portalAccount = null;
                     $customer = Customer::query()
+                        ->when($table->business->business_type !== null, fn ($query) => $query->whereNotIn('id',
+                            DB::table('business_customers')->where('business_id', $table->business_id)->select('customer_id')))
                         ->where('phone', $customerPhone)
                         ->lockForUpdate()
                         ->first();
@@ -442,6 +450,11 @@ class CustomerCheckoutController extends Controller
                         // dipakai untuk kebutuhan Midtrans dan metadata order.
                         'address' => trim($validated['customer_email']),
                     ])->save();
+
+                    }
+
+                    [$promotion,$promotionDiscount]=app(\App\Services\PromotionService::class)->quote($table->business,$customer,$total,null);
+                    $total-=$promotionDiscount;
 
 
                     if (
@@ -527,6 +540,7 @@ class CustomerCheckoutController extends Controller
                             0,
 
                         'customer_id' => $customer->id,
+                        'promotion_discount' => $promotionDiscount,
                         // QR orders intentionally have no cashier creator.
                         'user_id' => null,
                         'payment_method' => $paymentMethod,
@@ -601,6 +615,8 @@ class CustomerCheckoutController extends Controller
                     |--------------------------------------------------------------------------
                     */
 
+                    if ($portalAccount) $sale->forceFill(['customer_account_id'=>$portalAccount->id])->save();
+                    app(\App\Services\PromotionService::class)->record($promotion,$sale,$promotionDiscount);
                     return $sale;
                 }
             );
@@ -616,24 +632,7 @@ class CustomerCheckoutController extends Controller
 
 try {
 
-    $users = User::role([
-            'Admin',
-            'Kasir',
-        ])
-        ->where('is_active', true)
-        ->get();
-
-    foreach ($users as $user) {
-
-        $user->notify(
-            new NewTableOrderNotification(
-                $sale->fresh([
-                    'saleDetails.product'
-                ])
-            )
-        );
-    }
-
+    app(\App\Services\CustomerOrderNotifications::class)->send($sale,'new_customer_order');
 } catch (Throwable $notificationError) {
 
     // Jangan menggagalkan transaksi hanya karena notifikasi gagal.
@@ -786,7 +785,7 @@ try {
         $id = $table instanceof Table ? $table->getKey() : $table;
         $resolved = Table::withoutGlobalScopes()->findOrFail($id);
 
-        if (! $resolved->business?->is_active) {
+        if (! $resolved->business?->allowsOperations()) {
             abort(404);
         }
 

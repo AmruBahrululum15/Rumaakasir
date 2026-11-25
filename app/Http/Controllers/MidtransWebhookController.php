@@ -106,6 +106,8 @@ class MidtransWebhookController extends Controller
                 );
             }
 
+            // Portal orders must be verified with their own merchant credentials.
+            if ($sale->order_source === 'customer_portal') return response()->json(['message'=>'Use the store payment notification endpoint.'],403);
             app(TenantContext::class)->set($sale->business);
 
 

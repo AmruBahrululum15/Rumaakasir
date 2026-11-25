@@ -487,7 +487,7 @@
 
                         <img
                             id="photoPreview"
-                            src="{{ asset('storage/' . $user->foto) }}"
+                            src="{{ route('users.photo', $user->id) }}"
                             class="photo-preview"
                             alt="{{ $user->name }}"
                             onerror="showPlaceholder()"

@@ -13,9 +13,58 @@ class Business extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'phone', 'address', 'logo', 'is_active'];
+    protected $fillable = [
+        'name', 'slug', 'phone', 'address', 'logo', 'is_active',
+        'subscription_plan', 'subscription_status', 'subscription_ends_at',
+        'user_limit', 'product_limit',
+    ];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = [
+        'subscription_started_at' => 'datetime',
+        'is_active' => 'boolean',
+        'subscription_ends_at' => 'datetime',
+        'user_limit' => 'integer',
+        'product_limit' => 'integer',
+    ];
+
+    protected $attributes = [
+        'is_active' => true,
+        'subscription_plan' => 'free',
+        'subscription_status' => 'active',
+    ];
+
+    public function allowsOperations(): bool
+    {
+        // Typed tenants retain Free operations after a paid/admin Premium term expires.
+        // Null-type legacy tenants keep their original operational access rules.
+        if ($this->business_type !== null && $this->subscription_plan === 'premium'
+            && in_array($this->subscription_status, ['active', 'expired'], true)
+            && $this->subscription_ends_at?->isPast()) {
+            return $this->is_active;
+        }
+        // Approved Premium applications use Free until an actual payment settles.
+        if ($this->subscription_source === 'store_registration' && $this->subscription_plan === 'free'
+            && $this->subscription_status === 'pending_payment') {
+            return $this->is_active;
+        }
+        // Paid DOKU terms expire into Free. Administrative suspension and all
+        // legacy platform-controlled access rules retain their existing meaning.
+        if (in_array($this->subscription_source, ['doku', 'midtrans'], true)
+            && in_array($this->subscription_status, ['active', 'expired'], true)) {
+            return $this->is_active;
+        }
+        return $this->is_active && $this->subscription_status === 'active'
+            && (! $this->subscription_ends_at || $this->subscription_ends_at->isFuture());
+    }
+
+    public function effectiveSubscriptionPlan(): string
+    {
+        if (in_array($this->subscription_source, ['doku', 'midtrans'], true)
+            && ($this->subscription_status !== 'active' || ! $this->subscription_ends_at?->isFuture())) {
+            return 'free';
+        }
+        return $this->subscription_plan;
+    }
 
     protected static function booted(): void
     {

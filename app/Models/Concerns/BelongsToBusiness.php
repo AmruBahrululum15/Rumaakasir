@@ -52,19 +52,25 @@ trait BelongsToBusiness
                 $business->forceFill(['owner_id' => $model->id])->save();
             }
         });
+
+        static::updating(function ($model): void {
+            if ($model->isDirty('business_id')) {
+                throw new LogicException('Existing tenant records cannot be moved to another business.');
+            }
+        });
     }
 
     /**
      * Legacy POS routes such as the login branding and public table QR flow do
      * not have an authenticated user from which to resolve a tenant.  Until a
      * request has an explicit tenant, keep those established single-store
-     * flows on the original active business (Toko Default, ID 1).
+     * flows on Toko Default (ID 1), never an arbitrary active store.
      */
     protected static function resolveBusinessId(): ?int
     {
         return app(TenantContext::class)->id()
             ?? Auth::user()?->business_id
-            ?? Business::query()->where('is_active', true)->orderBy('id')->value('id');
+            ?? 1;
     }
 
     public function business(): BelongsTo

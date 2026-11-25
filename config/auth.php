@@ -38,6 +38,7 @@ return [
     */
 
     'guards' => [
+        'customer' => ['driver' => 'session', 'provider' => 'customers'],
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
@@ -62,6 +63,7 @@ return [
     */
 
     'providers' => [
+        'customers' => ['driver' => 'eloquent', 'model' => \App\Models\CustomerAccount::class],
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
@@ -93,6 +95,7 @@ return [
     */
 
     'passwords' => [
+        'customers' => ['provider'=>'customers', 'table'=>'customer_password_reset_tokens', 'expire'=>60, 'throttle'=>60],
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),

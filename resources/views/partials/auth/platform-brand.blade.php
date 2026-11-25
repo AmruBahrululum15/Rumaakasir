@@ -1,0 +1,1 @@
+<div class="platform-brand"><span class="brand-mark">@if($platformLogo)<img src="{{ asset($platformLogo) }}" alt="Logo {{ $platformName }}">@else<span class="brand-monogram" aria-hidden="true">R</span>@endif</span><span class="brand-name">{{ $platformName }}</span></div>

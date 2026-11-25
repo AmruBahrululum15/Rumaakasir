@@ -1346,6 +1346,54 @@
 }
 
 
+.pos-sales-page .payment-method-options {
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+    background: #f7f5f2;
+}
+
+.pos-sales-page .payment-method-options > .payment-method-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: 9px 6px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #59616d;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    box-shadow: none;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.pos-sales-page .payment-method-option:hover {
+    background: #ffffff;
+    color: var(--pos-text);
+}
+
+.pos-sales-page .payment-method-option.active,
+.pos-sales-page .payment-method-option:has(input:checked) {
+    border-color: #f4bd95;
+    background: var(--pos-orange-soft);
+    color: #a64408;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .04);
+}
+
+.pos-sales-page .payment-method-option.focus,
+.pos-sales-page .payment-method-option:focus-within {
+    outline: 2px solid var(--pos-orange);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
 .payment-input {
     height:
         38px !important;
@@ -2565,9 +2613,9 @@
 
                     <div class="form-group mb-3">
                         <label class="payment-label"><i class="fas fa-credit-card"></i> Jenis Pembayaran <span class="text-danger">*</span></label>
-                        <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
+                        <div class="btn-group btn-group-toggle d-flex payment-method-options" data-toggle="buttons" role="group" aria-label="Jenis Pembayaran">
                             @foreach(['cash' => 'Cash', 'qris' => 'QRIS', 'va' => 'VA'] as $value => $label)
-                                <label class="btn btn-outline-primary {{ old('payment_method', 'cash') === $value ? 'active' : '' }}">
+                                <label class="btn payment-method-option {{ old('payment_method', 'cash') === $value ? 'active' : '' }}">
                                     <input type="radio" name="payment_method" value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'checked' : '' }}> {{ $label }}
                                 </label>
                             @endforeach
@@ -2762,6 +2810,13 @@
         <div id="hiddenCartInputs"></div>
 
 
+        @if(app(\App\Services\PackageAccess::class)->allows('customer_loyalty'))
+        <div class="card card-body mt-3"><label for="loyalty_customer_id">Akun customer loyalty (wajib untuk redeem)</label><select id="loyalty_customer_id" name="loyalty_customer_id" class="form-control" onchange="if(this.selectedOptions[0].dataset.name) document.getElementById('customer_name').value=this.selectedOptions[0].dataset.name"><option value="">Gunakan nama customer pada form</option>@foreach(\App\Models\Customer::orderBy('name')->get(['id','name','phone']) as $loyaltyCustomer)<option value="{{ $loyaltyCustomer->id }}" data-name="{{ $loyaltyCustomer->name }}" @selected(old('loyalty_customer_id')==$loyaltyCustomer->id)>{{ $loyaltyCustomer->name }} · {{ $loyaltyCustomer->phone ?? 'Tanpa telepon' }} · #{{ $loyaltyCustomer->id }}</option>@endforeach</select></div>
+        <div class="card card-body mt-3"><label for="redeem_points">Redeem poin customer (tunai)</label><input class="form-control" id="redeem_points" name="redeem_points" type="number" min="0" value="{{ old('redeem_points',0) }}"><small>Saldo mengikuti akun customer yang dipilih. Diskon dan kembalian dihitung ulang oleh server. <a href="{{ route('loyalty.index') }}">Lihat saldo / pengaturan loyalty</a></small></div>
+        @endif
+        @if(app(\App\Services\PackageAccess::class)->allows('promotions'))
+        <div class="card card-body mt-3" id="premium_pricing"><label for="voucher_code">Kode voucher (opsional)</label><input class="form-control" id="voucher_code" name="voucher_code" maxlength="50" value="{{ old('voucher_code') }}"><small>Kosongkan untuk promo otomatis terbaik. Total akhir dan kembalian dihitung server setelah validasi promo.</small></div>
+        @endif
     </form>
 
 </div>
@@ -2786,6 +2841,35 @@ const products = @json($products);
    ============================================================ */
 
 let cart = {};
+const premiumPricingEnabled = @json(app(\App\Services\PackageAccess::class)->allows('customer_loyalty') || app(\App\Services\PackageAccess::class)->allows('promotions'));
+let premiumQuote = null, quoteSequence = 0, quoteTimer = null;
+function refreshPremiumQuote() {
+    if (!premiumPricingEnabled) return;
+    premiumQuote = null;
+    const sequence = ++quoteSequence;
+    clearTimeout(quoteTimer);
+    updatePayment();
+    if (!Object.keys(cart).length) return;
+    quoteTimer = setTimeout(async function() {
+        try {
+            const response = await fetch(@json(route('premium.checkout.quote')), {method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('#formPenjualan [name="_token"]').value},body:JSON.stringify({products:Object.values(cart).map(item=>({product_id:item.id,quantity:item.quantity})),customer_name:$('#customer_name').val(),loyalty_customer_id:$('#loyalty_customer_id').val() || null,redeem_points:$('#redeem_points').val() || 0,voucher_code:$('#voucher_code').val() || null,payment_method:$('input[name="payment_method"]:checked').val()})});
+            const result = await response.json();
+            if (sequence!==quoteSequence) return;
+            if (!response.ok) throw new Error(Object.values(result.errors || {}).flat()[0] || 'Perhitungan diskon tidak tersedia.');
+            premiumQuote=result;
+            $('#grandTotal').text(formatRupiah(result.total));
+            $('#premiumQuoteDetails').remove();
+            $('<p id="premiumQuoteDetails" class="small text-muted"></p>').text('Promo: '+formatRupiah(result.promotion_discount)+' ? Redeem: '+formatRupiah(result.loyalty_discount)+'. Harga divalidasi ulang saat disimpan.').insertAfter('#grandTotal');
+            updatePayment();
+        } catch(error) {
+            if(sequence!==quoteSequence) return;
+            $('#paymentStatus').empty().append($('<div class="alert alert-warning mb-0"></div>').text(error.message));
+            $('#btnSimpan').prop('disabled',true);
+        }
+    },300);
+}
+$(document).on('input change','#voucher_code,#redeem_points,#loyalty_customer_id,#customer_name,input[name="payment_method"]',refreshPremiumQuote);
+
 
 let selectedCategory = 'all';
 
@@ -3261,7 +3345,7 @@ function updateSummary()
         );
 
 
-    updatePayment();
+    if (premiumPricingEnabled) refreshPremiumQuote(); else updatePayment();
 }
 
 
@@ -3276,7 +3360,7 @@ function updatePayment()
 
 
     const total =
-        summary.total;
+        premiumQuote ? premiumQuote.total : summary.total;
 
 
     const paid =
@@ -3327,6 +3411,18 @@ function updatePayment()
     }
 
 
+    if (premiumPricingEnabled && !premiumQuote) {
+        $('#changeDisplay').text('Menunggu perhitungan');
+        $('#paymentStatus').text('Menghitung harga dan benefit dari server...');
+        $('#btnSimpan').prop('disabled',true);
+        return;
+    }
+    if (premiumPricingEnabled && $('input[name="payment_method"]:checked').val() !== 'cash') {
+        $('#changeDisplay').text('Dibayar melalui gateway');
+        $('#paymentStatus').text('Total pembayaran telah dihitung server.');
+        $('#btnSimpan').prop('disabled',false);
+        return;
+    }
     /* PAYMENT LESS */
 
     if (
@@ -3693,7 +3789,7 @@ $(document).on(
 
             $('#paid')
                 .val(
-                    summary.total
+                    premiumQuote ? premiumQuote.total : summary.total
                 );
 
         }
@@ -3802,7 +3898,7 @@ $('#formPenjualan').on(
             ) || 0;
 
 
-        if ($('input[name="payment_method"]:checked').val() === 'cash' && paid < summary.total) {
+        if ($('input[name="payment_method"]:checked').val() === 'cash' && paid < summary.total && !(parseInt($('#redeem_points').val(),10)>0) && !$('#premium_pricing').length) {
 
             valid =
                 false;

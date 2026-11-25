@@ -8,7 +8,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Table;
 use App\Services\MidtransService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 

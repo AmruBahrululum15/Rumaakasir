@@ -32,6 +32,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('first-login.edit');
         }
 
+        if ($request->user()->hasRole('Super Admin')) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
         return redirect()->intended(
             route('dashboard', absolute: false)
         );

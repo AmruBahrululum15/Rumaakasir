@@ -138,6 +138,7 @@
 
     {{-- Custom Scripts --}}
     @yield('adminlte_js')
+    @include('partials.ai-floating')
 
 </body>
 

@@ -20,6 +20,11 @@ class User extends Authenticatable
      */
     protected $guard_name = 'web';
 
+    protected $attributes = [
+        'status' => 'approved',
+        'is_active' => true,
+    ];
+
     /**
      * Field yang boleh diisi.
      */
@@ -64,9 +69,26 @@ class User extends Authenticatable
         return $this->hasMany(Sale::class);
     }
 
+    public function photoPath(): ?string
+    {
+        return $this->foto ? preg_replace('#^storage/#', '', str_replace('\\', '/', $this->foto)) : null;
+    }
+
+    public function photoDisk(): string
+    {
+        return $this->photoPath() && \Illuminate\Support\Facades\Storage::disk('local')->exists($this->photoPath())
+            ? 'local' : 'public';
+    }
+
     public function ownedBusinesses(): HasMany
     {
         return $this->hasMany(Business::class, 'owner_id');
+    }
+
+    /** Broker repository key: shared email addresses must never share reset tokens. */
+    public function getEmailForPasswordReset(): string
+    {
+        return 'account:'.$this->getKey();
     }
 
     /** Keep Laravel's password broker while applying the business branding. */

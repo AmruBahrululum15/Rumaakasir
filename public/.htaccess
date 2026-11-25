@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Legacy employee photos remain on disk but must be served through auth.
+    RewriteRule ^storage/(users|profiles|profile)(/|$) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

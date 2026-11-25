@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Tenancy\TenantContext;
 
 class UpdateCategoryRequest extends FormRequest
 {
@@ -16,8 +18,8 @@ class UpdateCategoryRequest extends FormRequest
         $id = $this->route('category')->id;
 
         return [
-            'name' => "required|max:100|unique:categories,name,$id",
-            'description' => 'nullable|max:500',
+            'name' => ['required', 'string', 'max:100', Rule::unique('categories', 'name')->where('business_id', app(TenantContext::class)->id())->ignore($id)],
+            'description' => 'nullable|string',
             'status' => 'required|boolean',
         ];
     }

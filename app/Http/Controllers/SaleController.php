@@ -183,7 +183,7 @@ class SaleController extends Controller
         */
 
         $statisticsSales =
-            (clone $query)->get();
+            (clone $query)->validForTotals()->get();
 
         /*
         |--------------------------------------------------------------------------
@@ -277,6 +277,15 @@ class SaleController extends Controller
                 ->orderBy('name')
                 ->get();
 
+        // Display available branch/central stock; checkout still rechecks locked server records.
+        $business=app(\App\Tenancy\TenantContext::class)->business();
+        if($business?->business_type!==null) {
+            $outlet=app(\App\Tenancy\OutletContext::class)->id();
+            $stockQuery=DB::table('outlet_stocks')->where('business_id',$business->id);
+            $stocks=$outlet ? $stockQuery->where('outlet_id',$outlet)->pluck('quantity','product_id') : $stockQuery->select('product_id')->selectRaw('SUM(quantity) AS quantity')->groupBy('product_id')->pluck('quantity','product_id');
+            foreach($products as $product)$product->setAttribute('stock',$outlet ? (int)($stocks[$product->id]??0) : max(0,$product->stock-(int)($stocks[$product->id]??0)));
+        }
+
         $code =
             $this->generateSaleCode();
 
@@ -333,7 +342,7 @@ class SaleController extends Controller
             'products.*.product_id' => [
                 'required',
                 'integer',
-                'exists:products,id',
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id()),
             ],
 
             'products.*.quantity' => [
@@ -507,6 +516,22 @@ class SaleController extends Controller
                     */
 
                     $paymentMethod = $request->string('payment_method')->lower()->value();
+                    $checkoutBusiness=app(\App\Services\PackageAccess::class)->currentBusiness();
+                    $customerName = trim((string) $request->input('customer_name'));
+                    $customerId=$request->validate(['loyalty_customer_id'=>['nullable','integer']])['loyalty_customer_id'] ?? null;
+                    if($customerId) {
+                        app(\App\Services\PackageAccess::class)->ensureFeature('customer_loyalty',$checkoutBusiness);
+                        $customer=Customer::where('business_id',$checkoutBusiness->id)->lockForUpdate()->findOrFail($customerId);
+                    } else $customer = Customer::query()->where('name', $customerName)->lockForUpdate()->first();
+                    $customer ??= Customer::create(['name' => $customerName]);
+                    $voucher=$request->validate(['voucher_code'=>['nullable','string','max:50']])['voucher_code'] ?? null;
+                    [$promotion,$promotionDiscount]=app(\App\Services\PromotionService::class)->quote($checkoutBusiness,$customer,$total,$voucher);
+                    $total-=$promotionDiscount;
+                    $redeem = $request->validate(['redeem_points'=>['nullable','integer','min:0','max:100000000']])['redeem_points'] ?? 0;
+                    if($redeem && !$customerId) throw new \Exception('Pilih akun customer loyalty sebelum redeem.');
+                    if ($redeem && $paymentMethod !== 'cash') throw new \Exception('Redeem poin tersedia untuk pembayaran tunai.');
+                    $loyaltyDiscount = app(\App\Services\LoyaltyService::class)->quote($checkoutBusiness,$customer,(int)$redeem,$total);
+                    $total -= $loyaltyDiscount;
                     $paid = (float) ($request->paid ?? 0);
 
                     if ($paymentMethod === 'cash' && $paid < $total) {
@@ -535,11 +560,6 @@ class SaleController extends Controller
 
                     $change = $paymentMethod === 'cash' ? $paid - $total : 0;
 
-                    $customerName = trim((string) $request->input('customer_name'));
-                    // POS only collects a name: reuse an existing exact-name customer,
-                    // otherwise create a minimal customer without inventing contact data.
-                    $customer = Customer::query()->where('name', $customerName)->lockForUpdate()->first();
-                    $customer ??= Customer::create(['name' => $customerName]);
 
                     /*
                     |--------------------------------------------------------------------------
@@ -566,6 +586,9 @@ class SaleController extends Controller
                             'sale_date' => $request->sale_date,
 
                             'total' => $total,
+                            'loyalty_redeem_points' => (int)$redeem,
+                            'loyalty_discount' => $loyaltyDiscount,
+                            'promotion_discount' => $promotionDiscount,
 
                             'paid' => $paid,
 
@@ -622,6 +645,7 @@ class SaleController extends Controller
                             );
                     }
 
+                    app(\App\Services\PromotionService::class)->record($promotion,$sale,$promotionDiscount);
                     return $sale;
                 }
             );
@@ -722,6 +746,10 @@ class SaleController extends Controller
         Request $request,
         Sale $sale
     ) {
+        abort_if($sale->outlet_id!==null,422,'Transaksi outlet memiliki jurnal stok. Gunakan refund / void untuk koreksi.');
+        abort_if(app(\App\Services\PackageAccess::class)->allows('approval_transactions',$sale->business) && $sale->payment_status==='PAID',422,'Gunakan pengajuan refund untuk transaksi yang sudah dibayar.');
+        abort_if((float)$sale->promotion_discount>0,422,'Transaksi promo tidak dapat diedit. Gunakan refund yang tercatat.');
+        abort_if(\Illuminate\Support\Facades\DB::table('customer_loyalty_points')->where('business_id',$sale->business_id)->where('source_id',$sale->id)->exists(),422,'Transaksi dengan ledger loyalty tidak dapat diedit. Gunakan proses refund yang tercatat.');
 
         $request->validate([
 
@@ -750,7 +778,7 @@ class SaleController extends Controller
             'products.*.product_id' => [
                 'required',
                 'integer',
-                'exists:products,id',
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id()),
             ],
 
             'products.*.quantity' => [
@@ -1105,6 +1133,10 @@ class SaleController extends Controller
      */
     public function destroy(Sale $sale)
     {
+        abort_if($sale->outlet_id!==null,422,'Transaksi outlet memiliki jurnal stok dan tidak dapat dihapus.');
+        abort_if(app(\App\Services\PackageAccess::class)->allows('approval_transactions',$sale->business),422,'Gunakan pengajuan refund / void.');
+        abort_if((float)$sale->promotion_discount>0,422,'Transaksi promo tidak dapat dihapus. Gunakan refund yang tercatat.');
+        abort_if(\Illuminate\Support\Facades\DB::table('customer_loyalty_points')->where('business_id',$sale->business_id)->where('source_id',$sale->id)->exists(),422,'Transaksi dengan ledger loyalty tidak dapat dihapus.');
         try {
 
             DB::transaction(
@@ -1209,7 +1241,7 @@ class SaleController extends Controller
     private function generateSaleCode(): string
     {
         $lastSale =
-            Sale::orderByDesc('id')
+            Sale::withoutGlobalScope('outlet')->orderByDesc('id')
                 ->first();
 
         if (
@@ -1242,7 +1274,7 @@ class SaleController extends Controller
             );
 
         while (
-            Sale::where(
+            Sale::withoutGlobalScope('outlet')->where(
                 'code',
                 $code
             )->exists()

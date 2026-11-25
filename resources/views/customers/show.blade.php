@@ -18,4 +18,7 @@
         </dl>
     </div></div>
     <a class="btn btn-link mt-2" href="{{ route('customers.index') }}">Kembali ke daftar pelanggan</a>
+    @if(app(\App\Services\PackageAccess::class)->allows('customer_loyalty'))
+    <a class="btn btn-outline-warning" href="{{ route('loyalty.show',$customer) }}">Saldo & Riwayat Poin</a>
+    @endif
 @stop

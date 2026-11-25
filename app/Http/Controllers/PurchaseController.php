@@ -123,7 +123,7 @@ class PurchaseController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $lastPurchase = Purchase::orderBy(
+        $lastPurchase = Purchase::withoutGlobalScope('outlet')->orderBy(
             'id',
             'desc'
         )->first();
@@ -186,7 +186,7 @@ class PurchaseController extends Controller
 
             'supplier_id' => [
                 'required',
-                'exists:suppliers,id'
+                \Illuminate\Validation\Rule::exists('suppliers', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())
             ],
 
             'purchase_date' => [
@@ -202,7 +202,7 @@ class PurchaseController extends Controller
 
             'products.*.product_id' => [
                 'required',
-                'exists:products,id'
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())
             ],
 
             'products.*.quantity' => [
@@ -285,7 +285,7 @@ class PurchaseController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                $lastPurchase = Purchase::lockForUpdate()
+                $lastPurchase = Purchase::withoutGlobalScope('outlet')->lockForUpdate()
                     ->orderBy(
                         'id',
                         'desc'
@@ -567,6 +567,7 @@ class PurchaseController extends Controller
         Request $request,
         Purchase $purchase
     ) {
+        abort_if($purchase->outlet_id!==null,422,'Pembelian outlet memiliki jurnal stok dan tidak dapat diubah.');
         /*
         |--------------------------------------------------------------------------
         | VALIDASI
@@ -577,7 +578,7 @@ class PurchaseController extends Controller
 
             'supplier_id' => [
                 'required',
-                'exists:suppliers,id'
+                \Illuminate\Validation\Rule::exists('suppliers', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())
             ],
 
             'purchase_date' => [
@@ -593,7 +594,7 @@ class PurchaseController extends Controller
 
             'products.*.product_id' => [
                 'required',
-                'exists:products,id'
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('business_id', app(\App\Tenancy\TenantContext::class)->id())
             ],
 
             'products.*.quantity' => [
@@ -870,6 +871,7 @@ class PurchaseController extends Controller
      */
     public function destroy(Purchase $purchase)
     {
+        abort_if($purchase->outlet_id!==null,422,'Pembelian outlet memiliki jurnal stok dan tidak dapat dihapus.');
         /*
         |--------------------------------------------------------------------------
         | DATABASE TRANSACTION

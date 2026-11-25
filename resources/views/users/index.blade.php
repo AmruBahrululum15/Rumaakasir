@@ -245,11 +245,7 @@
                                             if ($fotoPath) {
                                                 $fotoPath = str_replace('\\', '/', $fotoPath);
 
-                                                if (str_starts_with($fotoPath, 'storage/')) {
-                                                    $fotoUrl = asset($fotoPath);
-                                                } else {
-                                                    $fotoUrl = asset('storage/' . ltrim($fotoPath, '/'));
-                                                }
+                                                $fotoUrl = route('users.photo', $user->id);
                                             } else {
                                                 $fotoUrl = null;
                                             }

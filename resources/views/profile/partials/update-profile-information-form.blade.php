@@ -1,10 +1,10 @@
-<form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+<form method="POST" action="{{ route($profileUpdateRoute ?? 'profile.update') }}" enctype="multipart/form-data">
     @csrf
     @method('PATCH')
     <div class="row">
         <div class="col-md-4 mb-4"><div class="profile-photo-box">
             @if ($user->foto)
-                <img id="photo-preview" class="profile-photo" src="{{ asset('storage/' . $user->foto) }}" alt="Foto profil {{ $user->name }}">
+                <img id="photo-preview" class="profile-photo" src="{{ route('users.photo', $user->id) }}" alt="Foto profil {{ $user->name }}">
             @else
                 <div id="photo-placeholder" class="profile-photo-placeholder"><i class="fas fa-user"></i></div><img id="photo-preview" class="profile-photo d-none" src="" alt="Pratinjau foto profil">
             @endif

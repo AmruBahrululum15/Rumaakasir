@@ -16,7 +16,7 @@ class InitialSupervisorSeeder extends Seeder
         // Registration may request any of these established business roles.
         // Creating missing records is idempotent and lets approval assign the
         // approved role without a ModelNotFoundException / 404.
-        collect(['Admin', 'Gudang', 'Kasir', 'Atasan'])
+        collect(['Admin', 'Gudang', 'Kasir', 'Atasan', 'Super Admin'])
             ->each(fn (string $name) => Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']));
 
         $role = Role::findByName('Atasan', 'web');
@@ -30,7 +30,7 @@ class InitialSupervisorSeeder extends Seeder
             'products.create', 'products.delete', 'products.edit', 'products.view',
             'purchases.create', 'purchases.delete', 'purchases.edit', 'purchases.view',
             'reports.view',
-            'sales.create', 'sales.delete', 'sales.edit', 'sales.view',
+            'sales.create', 'sales.delete', 'sales.edit', 'sales.view', 'sales.approve-refunds',
             'settings.edit', 'settings.view',
             'suppliers.create', 'suppliers.delete', 'suppliers.edit', 'suppliers.view',
             'tables.create', 'tables.delete', 'tables.edit', 'tables.view',
@@ -39,6 +39,7 @@ class InitialSupervisorSeeder extends Seeder
         ])
             ->map(fn (string $name) => Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']));
         $role->givePermissionTo($permissions);
+        Role::findByName('Super Admin', 'web')->syncPermissions($permissions);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // The role/status check remains true after the setup username is changed.

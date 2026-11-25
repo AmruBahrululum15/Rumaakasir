@@ -1,3 +1,34 @@
+@php
+    $isSuperAdminShell = auth()->user()?->hasRole('Super Admin') ?? false;
+    $isPlatformPage = $isSuperAdminShell && request()->routeIs('super-admin.*', 'businesses.*', 'packages.*');
+    $platformName = config('adminlte.title') ?: config('app.name', 'POS Enterprise');
+    $platformLogo = config('adminlte.logo_img');
+    if ($platformLogo === 'vendor/adminlte/dist/img/AdminLTELogo.png') {
+        $platformLogo = null;
+    }
+    $platformSettings = $isSuperAdminShell ? \App\Models\PlatformSetting::find(1) : null;
+    $platformName = $platformSettings?->app_name ?: $platformName;
+    $platformLogo = $platformSettings?->logo ?: $platformLogo;
+    $saSubscriptions = request()->routeIs('super-admin.subscriptions.*');
+    $saTitle = match (true) {
+        request()->routeIs('super-admin.dashboard') => 'Dashboard',
+        $saSubscriptions => 'Paket & Langganan',
+        request()->routeIs('businesses.index') => 'Kelola Toko',
+        request()->routeIs('businesses.create') => 'Tambah Toko',
+        request()->routeIs('businesses.edit') => 'Edit Toko',
+        request()->routeIs('packages.*') => 'Fitur & Paket',
+        default => trim($__env->yieldContent('title', 'Akun')),
+    };
+    $saDescription = match (true) {
+        request()->routeIs('super-admin.dashboard') => 'Ringkasan tenant dan pengguna di seluruh platform.',
+        $saSubscriptions => 'Kelola paket dan status langganan setiap toko.',
+        request()->routeIs('businesses.index') => 'Kelola seluruh tenant yang menggunakan platform.',
+        request()->routeIs('businesses.create') => 'Siapkan toko baru beserta akun pemiliknya.',
+        request()->routeIs('businesses.edit') => 'Perbarui informasi dan akses langganan toko.',
+        request()->routeIs('packages.*') => 'Atur fitur dan batas penggunaan setiap paket.',
+        default => trim($__env->yieldContent('description', '')),
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -22,9 +53,9 @@
 
     <title>
         @hasSection('title')
-            @yield('title') - {{ $branding['name'] }}
+            @yield('title') - {{ $isSuperAdminShell ? $platformName : $branding['name'] }}
         @else
-            {{ $branding['name'] }}
+            {{ $isSuperAdminShell ? $platformName : $branding['name'] }}
         @endif
     </title>
 
@@ -48,8 +79,12 @@
         FONT AWESOME
     ========================================================== --}}
 
+    @if($isSuperAdminShell)
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
+    @else
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    @endif
 
 
     {{-- =========================================================
@@ -1811,10 +1846,13 @@
 
     </style>
 
+    @if($isSuperAdminShell)
+        <link rel="stylesheet" href="{{ asset('css/super-admin-shell.css') }}">
+    @endif
 </head>
 
 
-<body class="hold-transition layout-fixed">
+<body class="hold-transition layout-fixed{{ $isSuperAdminShell ? ' sa-shell' : '' }}{{ $isPlatformPage ? ' sa-platform-page' : '' }}">
 
 
 <div class="wrapper">
@@ -1824,6 +1862,9 @@
         TOP NAVBAR
     ========================================================== --}}
 
+    @if($isSuperAdminShell)
+        @include('partials.super-admin.navigation')
+    @else
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
 
 
@@ -1857,63 +1898,14 @@
             @auth
 
                 @php
-
-                    $unreadNotifications =
-                        auth()->user()->unreadNotifications->count();
-
-                @endphp
-
-
-                <li class="nav-item dropdown">
-
-                    <a class="nav-link"
-                       href="#"
-                       data-toggle="dropdown">
-
-                        <i class="fas fa-bell"></i>
-
-
-                        @if($unreadNotifications > 0)
-
-                            <span class="badge badge-danger navbar-badge">
-
-                                {{ $unreadNotifications }}
-
-                            </span>
-
-                        @endif
-
-                    </a>
-
-
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-
-
-                        <span class="dropdown-header">
-
-                            {{ $unreadNotifications }}
-
-                            Notifikasi Belum Dibaca
-
-                        </span>
-
-
-                        <div class="dropdown-divider"></div>
-
-
-                        <a href="{{ route('notifications.index') }}"
-                           class="dropdown-item">
-
-                            <i class="fas fa-bell mr-2"></i>
-
-                            Lihat Semua Notifikasi
-
-                        </a>
-
-
-                    </div>
-
-                </li>
+    $notificationQuery=app(\App\Services\StaffNotifications::class)->query(auth()->user());
+    $unreadNotifications=(clone $notificationQuery)->whereNull('read_at')->count();
+    $navbarNotifications=$notificationQuery->latest()->limit(8)->get();
+@endphp
+<li class="nav-item dropdown" id="order-notification-navbar" data-feed="{{ route('notifications.feed') }}">
+@include('partials.order-notifications')
+</li>
+<script src="{{ asset('js/order-notifications.js') }}" defer></script>
 
             @endauth
 
@@ -1936,7 +1928,7 @@
 
                         @if(auth()->user()->foto)
 
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}"
+                            <img src="{{ route('users.photo', auth()->id()) }}"
                                  class="user-image"
                                  alt="User">
 
@@ -1973,7 +1965,7 @@
 
                                 @if(auth()->user()->foto)
 
-                                    <img src="{{ asset('storage/' . auth()->user()->foto) }}"
+                                    <img src="{{ route('users.photo', auth()->id()) }}"
                                          alt="User">
 
                                 @else
@@ -2131,7 +2123,7 @@
 
                         @if(auth()->user()->foto)
 
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}"
+                            <img src="{{ route('users.photo', auth()->id()) }}"
                                  class="img-circle"
                                  alt="User">
 
@@ -2205,6 +2197,9 @@
 
 
                     <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="nav-icon fas fa-home"></i><p>Dashboard</p></a></li>
+                    @role('Super Admin')
+                    <li class="nav-item"><a href="{{ route('super-admin.dashboard') }}" class="nav-link {{ request()->routeIs('super-admin.*') ? 'active' : '' }}"><i class="nav-icon fas fa-chart-line"></i><p>Dashboard Super Admin</p></a></li>
+                    @endrole
 
                     @can('users.approve')
                     <li class="nav-item"><a href="{{ route('users.approvals.index') }}" class="nav-link {{ request()->routeIs('users.approvals.*') ? 'active' : '' }}"><i class="nav-icon fas fa-user-check"></i><p>Approval Registrasi</p></a></li>
@@ -2215,39 +2210,73 @@
                     <li class="nav-item"><a href="{{ route('sales.create') }}" class="nav-link {{ request()->routeIs('sales.create') ? 'active' : '' }}"><i class="nav-icon fas fa-shopping-cart"></i><p>Penjualan</p></a></li>
                     @endcan
                     @can('purchases.create')
+                    @businessModule('purchases')
                     <li class="nav-item"><a href="{{ route('purchases.create') }}" class="nav-link {{ request()->routeIs('purchases.create') ? 'active' : '' }}"><i class="nav-icon fas fa-shopping-bag"></i><p>Pembelian</p></a></li>
+                    @endbusinessModule
                     @endcan
                     @can('sales.view')
                     <li class="nav-item"><a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index', 'sales.show', 'sales.edit') ? 'active' : '' }}"><i class="nav-icon fas fa-history"></i><p>Riwayat Transaksi</p></a></li>
                     @endcan
                     @can('purchases.view')
+                    @businessModule('purchases')
                     <li class="nav-item"><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.index', 'purchases.show', 'purchases.edit') ? 'active' : '' }}"><i class="nav-icon fas fa-history"></i><p>Riwayat Pembelian</p></a></li>
+                    @endbusinessModule
                     @endcan
 
                     <li class="nav-header">MASTER DATA</li>
                     @can('products.view')
+                    @businessModule('products')
                     <li class="nav-item"><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}"><i class="nav-icon fas fa-box"></i><p>Produk</p></a></li>
+                    @endbusinessModule
                     @endcan
                     @can('categories.view')
+                    @businessModule('categories')
                     <li class="nav-item"><a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}"><i class="nav-icon fas fa-tags"></i><p>Kategori</p></a></li>
+                    @endbusinessModule
                     @endcan
                     @can('customers.view')
                     <li class="nav-item"><a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"><i class="nav-icon fas fa-users"></i><p>Pelanggan</p></a></li>
                     @endcan
                     @can('suppliers.view')
+                    @businessModule('suppliers')
                     <li class="nav-item"><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="nav-icon fas fa-briefcase"></i><p>Supplier</p></a></li>
+                    @endbusinessModule
                     @endcan
                     @can('tables.view')
-                    <li class="nav-item"><a href="{{ route('tables.index') }}" class="nav-link {{ request()->routeIs('tables.*') ? 'active' : '' }}"><i class="nav-icon fas fa-qrcode"></i><p>Meja & QR</p></a></li>
+                    @businessModule('tables')
+                    <li class="nav-item"><a href="{{ route('tables.index') }}" class="nav-link {{ request()->routeIs('tables.*') ? 'active' : '' }}"><i class="nav-icon fas fa-qrcode"></i><p>{{ app(\App\Services\BusinessModules::class)->tableNavigationLabel(app(\App\Tenancy\TenantContext::class)->business()) }}</p></a></li>
+                    @if(app(\App\Tenancy\TenantContext::class)->business()?->business_type !== null && auth()->user()->hasRole('Atasan') && !app(\App\Services\PackageAccess::class)->allows('qr_order'))
+                    <li class="nav-item"><a href="{{ route('subscriptions.index') }}" class="nav-link"><i class="nav-icon fas fa-qrcode"></i><p>QR Order <span class="badge badge-warning">Premium</span></p></a></li>
+                    @endif
+                    @endbusinessModule
                     @endcan
 
+                    @include('partials.premium-navigation')
                     @can('reports.view')
+                    @businessModule('reports')
                     <li class="nav-header">LAPORAN</li>
                     <li class="nav-item"><a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}"><i class="nav-icon fas fa-chart-bar"></i><p>Laporan</p></a></li>
-                    <li class="nav-item"><a href="{{ route('reports.export.excel') }}" class="nav-link {{ request()->routeIs('reports.export.excel') ? 'active' : '' }}"><i class="nav-icon fas fa-file-excel"></i><p>Export Excel</p></a></li>
-                    <li class="nav-item"><a href="{{ route('reports.pdf') }}" class="nav-link {{ request()->routeIs('reports.pdf') ? 'active' : '' }}"><i class="nav-icon fas fa-file-pdf"></i><p>Export PDF</p></a></li>
+                    @php($premiumSidebarBusiness = app(\App\Tenancy\TenantContext::class)->business())
+                    @if($premiumSidebarBusiness?->business_type !== null)
+                    @foreach(app(\App\Services\PremiumFeatures::class)->catalog($premiumSidebarBusiness->business_type) as $premiumKey=>$premiumDefinition)
+                    @if(isset($premiumDefinition['route']) && $premiumDefinition['status'] === 'available')
+                    @php($premiumAllowed = app(\App\Services\PackageAccess::class)->allows($premiumKey, $premiumSidebarBusiness))
+                    @if($premiumAllowed || auth()->user()->hasRole('Atasan'))
+                    <li class="nav-item"><a href="{{ route($premiumAllowed ? $premiumDefinition['route'] : 'subscriptions.index') }}" class="nav-link {{ request()->routeIs($premiumDefinition['route']) ? 'active' : '' }}"><i class="nav-icon fas fa-chart-line"></i><p>{{ $premiumDefinition['label'] }} @if(!$premiumAllowed)<span class="badge badge-warning">Premium</span>@endif</p></a></li>
+                    @endif
+                    @endif
+                    @endforeach
+                    @endif
+                    @php($sidebarPackage = app(\App\Tenancy\TenantContext::class)->business() ? app(\App\Services\PackageAccess::class)->package(app(\App\Tenancy\TenantContext::class)->business()) : null)
+                    <li class="nav-item"><a href="{{ route('reports.export.excel') }}" class="nav-link {{ request()->routeIs('reports.export.excel') ? 'active' : '' }}"><i class="nav-icon fas fa-file-excel"></i><p>Export Excel @if(! $sidebarPackage?->export_excel)<span class="badge badge-warning right">Premium</span>@endif</p></a></li>
+                    <li class="nav-item"><a href="{{ route('reports.pdf') }}" class="nav-link {{ request()->routeIs('reports.pdf') ? 'active' : '' }}"><i class="nav-icon fas fa-file-pdf"></i><p>Export PDF @if(! $sidebarPackage?->export_pdf)<span class="badge badge-warning right">Premium</span>@endif</p></a></li>
+                    @endbusinessModule
                     @endcan
 
+                    @if(auth()->user()->hasAnyRole(['Atasan', 'Pemilik']) && ! auth()->user()->hasRole('Super Admin'))
+                    <li class="nav-header">PAKET</li>
+                    <li class="nav-item"><a href="{{ route('subscriptions.index') }}" class="nav-link {{ request()->routeIs('subscriptions.*') ? 'active' : '' }}"><i class="nav-icon fas fa-crown"></i><p>Paket & Langganan</p></a></li>
+                    @endif
                     @canany(['settings.view', 'users.view'])
                     <li class="nav-header">PENGATURAN</li>
                     @endcanany
@@ -2257,6 +2286,10 @@
                     @can('users.view')
                     <li class="nav-item"><a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="nav-icon fas fa-user-cog"></i><p>Manajemen Pengguna</p></a></li>
                     @endcan
+                    @role('Super Admin')
+                    <li class="nav-item"><a href="{{ route('businesses.index') }}" class="nav-link {{ request()->routeIs('businesses.*') ? 'active' : '' }}"><i class="nav-icon fas fa-store"></i><p>Manajemen Toko</p></a></li>
+                    <li class="nav-item"><a href="{{ route('packages.index') }}" class="nav-link {{ request()->routeIs('packages.*') ? 'active' : '' }}"><i class="nav-icon fas fa-box-open"></i><p>Fitur & Paket</p></a></li>
+                    @endrole
 
 
                     {{-- =================================================
@@ -2331,6 +2364,7 @@
         </div>
 
     </aside>
+    @endif
 
 
     {{-- =========================================================
@@ -2338,6 +2372,15 @@
     ========================================================== --}}
 
     <div class="content-wrapper">
+
+        @if($isPlatformPage)
+            <header class="sa-page-heading">
+                <div><p class="sa-eyebrow">PLATFORM OVERVIEW</p><h1>{{ $saTitle }}</h1><p class="sa-page-description">{{ $saDescription }}</p></div>
+                @if(request()->routeIs('super-admin.dashboard', 'businesses.index'))
+                    <a href="{{ route('businesses.create') }}" class="btn btn-primary sa-create-button"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Tambah Toko</a>
+                @endif
+            </header>
+        @endif
 
 
         {{-- =====================================================
@@ -2367,6 +2410,12 @@
 
             <div class="container-fluid">
 
+                @if(auth()->user()?->hasRole('Super Admin') && app(\App\Tenancy\TenantContext::class)->business())
+                    <div class="alert alert-info mt-3">
+                        Toko aktif: <strong>{{ app(\App\Tenancy\TenantContext::class)->business()->name }}</strong>
+                        <a href="{{ route('businesses.index') }}" class="ml-2">Ganti toko</a>
+                    </div>
+                @endif
                 @yield('content')
 
             </div>
@@ -2405,7 +2454,7 @@
 
         <strong>
 
-            {{ $branding['name'] }}
+            {{ $isSuperAdminShell ? $platformName : $branding['name'] }}
 
         </strong>
 
@@ -2424,7 +2473,11 @@
     JQUERY
 ========================================================== --}}
 
+@if($isSuperAdminShell)
+<script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+@else
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+@endif
 
 
 {{-- =========================================================
@@ -2499,7 +2552,10 @@
 @yield('js')
 
 @stack('scripts')
-
+@if($isSuperAdminShell)
+<script src="{{ asset('js/super-admin-shell.js') }}" defer></script>
+@endif
+@include('partials.ai-floating')
 
 </body>
 

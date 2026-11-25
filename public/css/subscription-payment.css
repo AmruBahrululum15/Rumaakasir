@@ -1,0 +1,17 @@
+.subscription-payment{max-width:700px;margin:0 auto;padding:32px 20px 48px;color:#29364a}
+.subscription-payment .payment-card{padding:32px;background:#fff;border:1px solid #e6eaf0;border-radius:20px;box-shadow:0 6px 24px #25324706}
+.subscription-payment .payment-heading{text-align:center}.subscription-payment h1{font-size:25px;font-weight:750;margin:18px 0 8px;letter-spacing:-.5px}
+.subscription-payment .payment-heading p{font-size:13px;color:#7b8595;margin-bottom:16px}
+.subscription-payment .payment-icon{display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:18px}
+.subscription-payment .payment-badge{display:inline-block;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.4px}
+.subscription-payment .payment-tone-success{background:#e8f7ee;color:#237449}.subscription-payment .payment-tone-danger{background:#fff0ee;color:#b53a3a}.subscription-payment .payment-tone-muted{background:#eef1f5;color:#677486}.subscription-payment .payment-tone-waiting{background:#fff3df;color:#9a6510}
+.subscription-payment .payment-details{margin:28px 0 0}.subscription-payment .payment-details>div{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #eef1f5;font-size:14px}
+.subscription-payment dt{color:#758094;font-weight:400;flex-shrink:0}.subscription-payment dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere;min-width:0}
+.subscription-payment .payment-code{font-size:12px;line-height:1.8}.subscription-payment .payment-total dd{font-size:28px;font-weight:800;color:#d65313;letter-spacing:-.6px}
+.subscription-payment .payment-message{background:#f8fafc;border-radius:12px;padding:18px;margin:22px 0;line-height:1.7;font-size:13px}
+.subscription-payment .payment-message strong{font-size:14px}.subscription-payment .payment-message p{color:#728094;margin:5px 0 0}
+.subscription-payment .payment-actions{display:grid;gap:12px}.subscription-payment .payment-actions form{margin:0}.subscription-payment .payment-button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:11px 16px;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:600;line-height:1.6;text-align:center;text-decoration:none;cursor:pointer;width:100%}
+.subscription-payment .payment-primary{background:#e85e19;color:#fff}.subscription-payment .payment-primary:hover{background:#c84b0e}
+.subscription-payment .payment-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.subscription-payment .payment-secondary{background:#fff;border-color:#e0e5eb;color:#667489}.subscription-payment .payment-text{color:#ba4d1a;background:#fff7f0}.subscription-payment .payment-button:focus-visible{outline:3px solid #fdba74;outline-offset:3px}
+.subscription-payment .payment-actions small,.subscription-payment .payment-footnote{text-align:center;color:#8590a0;font-size:11px}.subscription-payment .payment-footnote{margin:24px 0 0}
+@media(max-width:600px){.subscription-payment{padding:20px 12px}.subscription-payment .payment-card{padding:24px 18px}.subscription-payment h1{font-size:23px}.subscription-payment .payment-details>div{gap:12px}.subscription-payment .payment-total dd{font-size:26px}.subscription-payment .payment-secondary-actions{grid-template-columns:1fr;gap:8px}}

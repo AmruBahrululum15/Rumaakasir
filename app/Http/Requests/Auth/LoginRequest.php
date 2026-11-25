@@ -51,9 +51,15 @@ class LoginRequest extends FormRequest
 
         $login = $this->string('login')->trim()->toString();
 
-        $field = filter_var($login, FILTER_VALIDATE_EMAIL)
-            ? 'email'
-            : 'username';
+        $field = 'username';
+        // Preserve the existing Super Admin email login only when unambiguous.
+        if (! \App\Models\User::where('username', $login)->exists() && filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $matches = \App\Models\User::where('email', $login)->limit(2)->get();
+            if ($matches->count() === 1 && $matches->first()->hasRole('Super Admin')) {
+                $field = 'id';
+                $login = $matches->first()->id;
+            }
+        }
 
         if (! Auth::attempt([
             $field => $login,
@@ -63,7 +69,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'login' => 'Username/email atau password yang Anda masukkan salah.',
+                'login' => 'Username atau password yang Anda masukkan salah.',
             ]);
         }
 

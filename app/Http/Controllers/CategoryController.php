@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -42,30 +44,22 @@ class CategoryController extends Controller
     /**
      * Menyimpan kategori baru.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
-            'description' => 'nullable|string',
-            'status' => 'required|boolean',
-        ], [
-            'name.required' => 'Nama kategori wajib diisi.',
-            'name.unique' => 'Nama kategori sudah tersedia.',
-            'status.required' => 'Status kategori wajib dipilih.',
-        ]);
-
         // Buat slug otomatis
-        $slug = Str::slug($request->name);
+        $slug = Str::substr(Str::slug($request->name), 0, 90) ?: 'kategori';
 
         // Pastikan slug unik
         $originalSlug = $slug;
         $counter = 1;
 
-        while (Category::where('slug', $slug)->exists()) {
+        while (Category::withTrashed()->where('slug', $slug)->exists()) {
             $slug = $originalSlug . '-' . $counter;
             $counter++;
         }
 
+        // BelongsToBusiness fills business_id from the server-resolved tenant.
+        // Never accept ownership from request input (including Super Admin POS).
         Category::create([
             'name' => $request->name,
             'slug' => $slug,
@@ -99,26 +93,16 @@ class CategoryController extends Controller
     /**
      * Update kategori.
      */
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'description' => 'nullable|string',
-            'status' => 'required|boolean',
-        ], [
-            'name.required' => 'Nama kategori wajib diisi.',
-            'name.unique' => 'Nama kategori sudah digunakan.',
-            'status.required' => 'Status kategori wajib dipilih.',
-        ]);
-
         // Slug dibuat ulang jika nama berubah
-        $slug = Str::slug($request->name);
+        $slug = Str::substr(Str::slug($request->name), 0, 90) ?: 'kategori';
 
         $originalSlug = $slug;
         $counter = 1;
 
         while (
-            Category::where('slug', $slug)
+            Category::withTrashed()->where('slug', $slug)
                 ->where('id', '!=', $category->id)
                 ->exists()
         ) {

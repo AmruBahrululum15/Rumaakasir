@@ -462,6 +462,11 @@
 
 
                         <div class="notification-actions">
+                            @if(isset($data['conversation_id']))
+                            <form action="{{ route('notifications.open',$notification->id) }}" method="post">@csrf<button class="notification-action notification-action-primary" type="submit">Buka percakapan</button></form>
+                            @elseif(isset($data['order_id']))
+                            <form action="{{ route('notifications.open',$notification->id) }}" method="post">@csrf<button class="notification-action notification-action-primary" type="submit">Buka detail order</button></form>
+                            @endif
 
 
                             {{-- MARK AS READ --}}

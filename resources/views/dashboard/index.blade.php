@@ -254,6 +254,7 @@
         </div>
 
 
+        @businessModule('suppliers')
         {{-- SUPPLIER --}}
         <div class="col-xl-3 col-md-6">
 
@@ -294,6 +295,7 @@
         </div>
 
 
+        @endbusinessModule
         {{-- TRANSAKSI --}}
         <div class="col-xl-3 col-md-6">
 

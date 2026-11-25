@@ -84,10 +84,8 @@
     $fotoUrl = null;
 
     if (!empty($user->foto)) {
-        $fotoPath = public_path('storage/' . $user->foto);
-
-        if (file_exists($fotoPath)) {
-            $fotoUrl = asset('storage/' . $user->foto);
+        if (\Illuminate\Support\Facades\Storage::disk($user->photoDisk())->exists($user->photoPath())) {
+            $fotoUrl = route('users.photo', $user->id);
         }
     }
 

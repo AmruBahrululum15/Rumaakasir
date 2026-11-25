@@ -8,6 +8,14 @@ use App\Models\Concerns\BelongsToBusiness;
 
 class Product extends Model
 {
+    protected static function booted():void {
+        static::updating(function(Product $product){
+            if($product->isDirty('stock') && $product->business?->business_type!==null && (int)$product->stock<(int)$product->getOriginal('stock')) {
+                $allocated=\Illuminate\Support\Facades\DB::table('outlet_stocks')->where('business_id',$product->business_id)->where('product_id',$product->id)->sum('quantity');
+                if((int)$product->stock<(int)$allocated)throw \Illuminate\Validation\ValidationException::withMessages(['stock'=>'Stok total tidak boleh kurang dari alokasi outlet.']);
+            }
+        });
+    }
     use BelongsToBusiness, HasFactory;
 
     /*

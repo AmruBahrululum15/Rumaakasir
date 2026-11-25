@@ -8,6 +8,7 @@ use App\Models\Concerns\BelongsToBusiness;
 
 class SaleDetail extends Model
 {
+    protected static function booted():void {static::created(fn($line)=>app(\App\Services\OutletInventory::class)->saleLine($line));}
     use BelongsToBusiness;
     protected $fillable = [
         'sale_id',
