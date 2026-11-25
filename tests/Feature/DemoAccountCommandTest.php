@@ -29,6 +29,7 @@ class DemoAccountCommandTest extends TestCase
         $this->assertTrue($user->hasRole('Atasan'));
         $this->assertFalse($user->must_change_credentials);
         $this->assertTrue(Hash::check('A-demo-password!', $user->password));
+        $this->assertDatabaseMissing('users', ['username' => 'atasan']);
     }
 
     public function test_it_refuses_to_overwrite_an_account_owned_by_another_tenant(): void

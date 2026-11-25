@@ -1,0 +1,29 @@
+FROM node:22-alpine AS frontend
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY vite.config.js postcss.config.js tailwind.config.js ./
+COPY resources ./resources
+RUN npm run build
+
+FROM dunglas/frankenphp:1-php8.4-alpine AS php-base
+WORKDIR /app
+RUN install-php-extensions pdo_mysql mbstring gd zip bcmath intl exif
+
+FROM php-base AS dependencies
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY . .
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+FROM php-base AS runtime
+COPY --from=dependencies /app /app
+COPY --from=frontend /app/public/build /app/public/build
+COPY Caddyfile.vercel /etc/caddy/Caddyfile
+COPY docker/vercel-entrypoint.sh /usr/local/bin/rumaakasir-entrypoint
+RUN chmod +x /usr/local/bin/rumaakasir-entrypoint
+ENV PORT=80 \
+    LARAVEL_STORAGE_PATH=/tmp/rumaakasir-storage \
+    LOG_CHANNEL=stderr \
+    SESSION_DRIVER=database \
+    CACHE_STORE=database
+ENTRYPOINT ["/usr/local/bin/rumaakasir-entrypoint"]

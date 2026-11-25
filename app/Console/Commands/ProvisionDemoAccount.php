@@ -46,7 +46,7 @@ class ProvisionDemoAccount extends Command
         }
 
         // Ensure the standard role and its existing permission set are ready.
-        (new InitialSupervisorSeeder())->run();
+        (new InitialSupervisorSeeder())->ensureRolesAndPermissions();
 
         try {
             [$business, $user, $created] = DB::transaction(function () use ($username, $email, $password, $businessName): array {

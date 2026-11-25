@@ -13,6 +13,36 @@ class InitialSupervisorSeeder extends Seeder
 {
     public function run(): void
     {
+        $role = $this->ensureRolesAndPermissions();
+
+        // The role/status check remains true after the setup username is changed.
+        if (User::role('Atasan')->where('status', 'approved')->where('is_active', true)->exists()) {
+            return;
+        }
+
+        $email = env('INITIAL_SUPERVISOR_EMAIL', 'initial-supervisor@example.invalid');
+
+        // Never repurpose an existing account that happens to use the configured
+        // address. An operator can choose another INITIAL_SUPERVISOR_EMAIL and
+        // run this idempotent seeder again if that collision ever occurs.
+        if (User::where('email', $email)->exists()) {
+            return;
+        }
+
+        $user = User::create([
+            'email' => $email,
+            'name' => 'Atasan Utama',
+            'username' => 'atasan',
+            'password' => Hash::make('atasan123'),
+            'status' => 'approved',
+            'is_active' => true,
+            'must_change_credentials' => true,
+        ]);
+        $user->assignRole($role);
+    }
+
+    public function ensureRolesAndPermissions(): Role
+    {
         // Registration may request any of these established business roles.
         // Creating missing records is idempotent and lets approval assign the
         // approved role without a ModelNotFoundException / 404.
@@ -41,30 +71,6 @@ class InitialSupervisorSeeder extends Seeder
         $role->givePermissionTo($permissions);
         Role::findByName('Super Admin', 'web')->syncPermissions($permissions);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // The role/status check remains true after the setup username is changed.
-        if (User::role('Atasan')->where('status', 'approved')->where('is_active', true)->exists()) {
-            return;
-        }
-
-        $email = env('INITIAL_SUPERVISOR_EMAIL', 'initial-supervisor@example.invalid');
-
-        // Never repurpose an existing account that happens to use the configured
-        // address. An operator can choose another INITIAL_SUPERVISOR_EMAIL and
-        // run this idempotent seeder again if that collision ever occurs.
-        if (User::where('email', $email)->exists()) {
-            return;
-        }
-
-        $user = User::create([
-            'email' => $email,
-            'name' => 'Atasan Utama',
-            'username' => 'atasan',
-            'password' => Hash::make('atasan123'),
-            'status' => 'approved',
-            'is_active' => true,
-            'must_change_credentials' => true,
-        ]);
-        $user->assignRole($role);
+        return $role;
     }
 }
